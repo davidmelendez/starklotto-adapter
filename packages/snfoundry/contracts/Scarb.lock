@@ -2,6 +2,17 @@
 version = 1
 
 [[package]]
+name = "cartridge_vrf"
+version = "0.1.0"
+source = "git+https://github.com/cartridge-gg/vrf.git#38d71385f939a19829113c122f1ab12dbbe0f877"
+dependencies = [
+ "openzeppelin_access",
+ "openzeppelin_upgrades",
+ "snforge_std",
+ "stark_vrf",
+]
+
+[[package]]
 name = "openzeppelin_access"
 version = "0.18.0"
 source = "registry+https://scarbs.xyz/"
@@ -48,6 +59,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "openzeppelin_upgrades"
+version = "0.18.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:33c9d0865364fc18a5e7b471fe53c3b0f3e0aec56a94f435089638fad2a4a35b"
+
+[[package]]
 name = "openzeppelin_utils"
 version = "0.18.0"
 source = "registry+https://scarbs.xyz/"
@@ -69,9 +86,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "stark_vrf"
+version = "0.1.0"
+source = "git+https://github.com/dojoengine/stark-vrf.git#96d6d2a88b1ef46c4a285d0ccc334237205edae3"
+
+[[package]]
 name = "starklotto_adapter_vrf"
 version = "0.1.0"
 dependencies = [
+ "cartridge_vrf",
  "openzeppelin_access",
  "openzeppelin_testing",
  "openzeppelin_token",
