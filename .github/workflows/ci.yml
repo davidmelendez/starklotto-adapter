@@ -18,7 +18,7 @@ on:
 
 jobs:
   # -------------------------
-  # 1. StarkLotto General CI (Skip scarb fetch)
+  # 1. StarkLotto General CI
   # -------------------------
   build-and-test:
     runs-on: ubuntu-latest
@@ -32,6 +32,11 @@ jobs:
         with:
           scarb-version: "2.7.0"
 
+      - name: Setup snfoundry
+        uses: foundry-rs/setup-snfoundry@v3
+        with:
+          tool-versions: ./.tool-versions
+
       - name: Skip global scarb fetch due to Starknet version conflicts
         run: echo "Skipping scarb fetch in main project because of version conflicts"
 
@@ -39,7 +44,7 @@ jobs:
         run: snforge test --snfoundry-manifest-path ./packages/snfoundry/contracts/Scarb.toml
 
   # -------------------------
-  # 2. Snfoundry Contracts CI (Full tests)
+  # 2. Snfoundry Contracts CI
   # -------------------------
   build-and-test-contracts:
     runs-on: ubuntu-latest
