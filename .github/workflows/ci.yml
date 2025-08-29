@@ -1,0 +1,94 @@
+name: StarkLotto CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - "**"
+      - ".github/workflows/**"
+
+  push:
+    branches:
+      - dev
+    paths:
+      - "packages/snfoundry/contracts/**"
+      - ".github/workflows/**"
+
+jobs:
+  # -------------------------
+  # 1. StarkLotto General CI
+  # -------------------------
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: "2.7.0"
+
+      - name: Install dependencies
+        run: |
+          scarb fetch
+          scarb build
+
+      - name: Verify Cartridge VRF + OpenZeppelin versions
+        run: |
+          echo "Cartridge VRF dependency:"
+          grep "cartridge_vrf" Scarb.toml
+          echo "OpenZeppelin dependency:"
+          grep "openzeppelin" Scarb.toml
+
+      - name: Run unit tests
+        run: |
+          scarb test
+
+      - name: Run integration tests
+        run: |
+          snforge test --snfoundry-manifest-path ./Scarb.toml
+
+  # -------------------------
+  # 2. Snfoundry Contracts CI
+  # -------------------------
+  build-and-test-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./.tool-versions
+          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
+
+      - name: Setup snfoundry
+        uses: foundry-rs/setup-snfoundry@v3
+        with:
+          tool-versions: ./.tool-versions
+
+      - name: Compile contracts
+        run: scarb build
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: List tests
+        run: snforge test -- --list
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: Run snfoundry tests (verbose + logs)
+        env:
+          RUST_BACKTRACE: 1
+          SNFORGE_FORMAT: pretty
+        run: snforge test -- -v --print-logs
+        working-directory: ./packages/snfoundry/contracts
