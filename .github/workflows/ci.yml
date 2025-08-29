@@ -41,7 +41,7 @@ jobs:
         run: echo "Skipping scarb fetch in main project because of version conflicts"
 
       - name: Run integration tests for contracts package
-        run: snforge test --snfoundry-manifest-path ./packages/snfoundry/contracts/Scarb.toml
+        run: snforge test -- --manifest-path ./packages/snfoundry/contracts/Scarb.toml
 
   # -------------------------
   # 2. Snfoundry Contracts CI
