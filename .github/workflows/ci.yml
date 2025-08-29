@@ -41,6 +41,7 @@ jobs:
         run: |
           scarb fetch
           scarb build
+        working-directory: ./packages/snfoundry/contracts
 
       - name: Verify Cartridge VRF + OpenZeppelin versions
         run: |
@@ -48,14 +49,15 @@ jobs:
           grep "cartridge_vrf" Scarb.toml
           echo "OpenZeppelin dependency:"
           grep "openzeppelin" Scarb.toml
+        working-directory: ./packages/snfoundry/contracts
 
       - name: Run unit tests
-        run: |
-          scarb test
+        run: scarb test
+        working-directory: ./packages/snfoundry/contracts
 
       - name: Run integration tests
-        run: |
-          snforge test --snfoundry-manifest-path ./Scarb.toml
+        run: snforge test --snfoundry-manifest-path ./Scarb.toml
+        working-directory: ./packages/snfoundry/contracts
 
   # -------------------------
   # 2. Snfoundry Contracts CI
