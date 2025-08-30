@@ -21,31 +21,30 @@ jobs:
   # 1. StarkLotto General CI
   # -------------------------
   build-and-test:
-    runs-on: ubuntu-latest
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    - name: Setup Scarb
+      uses: software-mansion/setup-scarb@v1
+      with:
+        scarb-version: "2.7.0"
 
-      - name: Setup Scarb
-        uses: software-mansion/setup-scarb@v1
-        with:
-          scarb-version: "2.7.0"
+    - name: Setup snfoundry
+      uses: foundry-rs/setup-snfoundry@v3
+      with:
+        tool-versions: ./.tool-versions
 
-      - name: Setup snfoundry
-        uses: foundry-rs/setup-snfoundry@v3
-        with:
-          tool-versions: ./.tool-versions
+    - name: Skip global scarb fetch due to version conflicts
+      run: echo "Skipping scarb fetch and build in main project because of dependency conflicts"
 
-      - name: Skip global scarb fetch due to Starknet version conflicts
-        run: echo "Skipping scarb fetch in main project because of version conflicts"
-
-      - name: Run integration tests for contracts package
-        run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
-        env:
-          RUST_BACKTRACE: 1
-          SNFORGE_FORMAT: pretty
+    - name: Run integration tests for contracts package
+      run: snforge test -- -v --print-logs
+      working-directory: ./packages/snfoundry/contracts
+      env:
+        RUST_BACKTRACE: 1
+        SNFORGE_FORMAT: pretty
 
   # -------------------------
   # 2. Snfoundry Contracts CI
