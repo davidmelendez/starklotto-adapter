@@ -1,4 +1,4 @@
-name: StarkLotto CI
+name: StarkLotto Contracts CI
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
       - dev
     paths:
-      - "**"
+      - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
 
   push:
@@ -18,44 +18,16 @@ on:
 
 jobs:
   # -------------------------
-  # 1. StarkLotto General CI
-  # -------------------------
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Scarb
-        uses: software-mansion/setup-scarb@v1
-        with:
-          scarb-version: "2.7.0"
-
-      - name: Setup snfoundry
-        uses: foundry-rs/setup-snfoundry@v3
-        with:
-          tool-versions: ./.tool-versions
-
-      - name: Skip global scarb fetch due to version conflicts
-        run: echo "Skipping scarb fetch and build in main project because of dependency conflicts"
-
-      - name: Run integration tests for contracts package
-        run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
-        env:
-          RUST_BACKTRACE: 1
-          SNFORGE_FORMAT: pretty
-
-  # -------------------------
-  # 2. Snfoundry Contracts CI
+  # Snfoundry Contracts CI
   # -------------------------
   build-and-test-contracts:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup scarb
+      - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
           tool-versions: ./.tool-versions
