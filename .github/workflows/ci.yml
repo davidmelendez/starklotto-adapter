@@ -1,0 +1,54 @@
+name: StarkLotto Contracts CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - "packages/snfoundry/contracts/**"
+      - ".github/workflows/**"
+
+  push:
+    branches:
+      - dev
+    paths:
+      - "packages/snfoundry/contracts/**"
+      - ".github/workflows/**"
+
+jobs:
+  # -------------------------
+  # Snfoundry Contracts CI
+  # -------------------------
+  build-and-test-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./.tool-versions
+          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
+
+      - name: Setup snfoundry
+        uses: foundry-rs/setup-snfoundry@v3
+        with:
+          tool-versions: ./.tool-versions
+
+      - name: Compile contracts
+        run: scarb build
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: List tests
+        run: snforge test -- --list
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: Run snfoundry tests (verbose + logs)
+        run: snforge test -- -v --print-logs
+        working-directory: ./packages/snfoundry/contracts
+        env:
+          RUST_BACKTRACE: 1
+          SNFORGE_FORMAT: pretty
