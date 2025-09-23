@@ -40,16 +40,34 @@ import { green } from "./helpers/colorize-log";
  *
  *
  * @returns {Promise<void>}
- */
+const deployScript = async (): Promise<void> => {
+  await deployContract(
+     {
+       contract: "YourContract",
+       contractName: "YourContractExportName",
+       constructorArgs: {
+         owner: deployer.address,
+       },
+       options: {
+         maxFee: BigInt(1000000000000)
+       }
+     }
+   );
+ };
+
+*/
+
 const deployScript = async (): Promise<void> => {
   await deployContract({
-    contract: "YourContract",
+    contract: "Randomness",
     constructorArgs: {
       owner: deployer.address,
+      vrf_coordinator: deployer.address,
+      dev_mode: true,
     },
   });
 };
-
+ 
 const main = async (): Promise<void> => {
   try {
     await deployScript();
