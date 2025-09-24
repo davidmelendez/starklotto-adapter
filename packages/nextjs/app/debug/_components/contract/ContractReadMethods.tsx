@@ -16,7 +16,7 @@ export const ContractReadMethods = ({
   }
 
   const functionsToDisplay = getFunctionsByStateMutability(
-    (deployedContractData.abi || []) as Abi,
+    Array.isArray(deployedContractData.abi) ? deployedContractData.abi : [],
     "view",
   )
     .filter((fn) => {

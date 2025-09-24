@@ -18,7 +18,7 @@ export const ContractWriteMethods = ({
   }
 
   const functionsToDisplay = getFunctionsByStateMutability(
-    (deployedContractData.abi || []) as Abi,
+    Array.isArray(deployedContractData.abi) ? deployedContractData.abi : [],
     "external",
   ).map((fn) => {
     return {
