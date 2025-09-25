@@ -38,7 +38,7 @@ const getContractDataFromDeployments = (): Record<
         try {
           const abiFilePath = path.join(
             __dirname,
-            `../../contracts/target/dev/contracts_${contractData.contract}.contract_class.json`
+            `../../contracts/target/dev/starklotto_adapter_vrf_${contractData.contract}.contract_class.json`
           );
           const abiContent: CompiledSierra = JSON.parse(
             fs.readFileSync(abiFilePath, "utf8")

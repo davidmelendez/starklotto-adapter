@@ -30,11 +30,10 @@ pub mod Randomness {
     };
     use super::IRandomnessLottery;
 
-    // Cartridge VRF dispatcher (interface names may vary per version).
-    // If available, these imports will allow making a typed request to the VRF coordinator.
-    // If your local cartridge_vrf exposes different symbols, adjust the path accordingly.
-    // The code compiles even if you do not call the dispatcher at build time.
-    // use cartridge_vrf::abi::{IRandomnessDispatcher, IRandomnessDispatcherTrait};
+    // Cartridge VRF dispatcher (según README de cartridge-gg/vrf)
+    use cartridge_vrf::IVrfProviderDispatcher;
+    use cartridge_vrf::IVrfProviderDispatcherTrait;
+    use cartridge_vrf::Source;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -166,16 +165,46 @@ pub mod Randomness {
                 },
             );
 
-            // Try to perform a typed call to Cartridge VRF if the dispatcher is available in your setup.
-            // Adjust the import path to match your installed cartridge_vrf version.
-            //
-            // let vrf_addr = self.vrf_coordinator.read();
-            // let vrf = IRandomnessDispatcher { contract_address: vrf_addr };
-            // let mut empty: Array<felt252> = array![];
-            // // Request 5 random words; VRF will call back `receive_random_words` below.
-            // vrf.request_random(
-            //     seed, get_contract_address(), callback_fee_limit, publish_delay, 5_u64, empty,
-            // );
+            // Consumo sincrónico de aleatorio usando Cartridge VRF.
+            // El caller debe prefijar la multicall con `request_random(caller, source)`.
+            // Aquí consumimos con el MISMO `Source`.
+            let vrf_addr = self.vrf_coordinator.read();
+            let vrf = IVrfProviderDispatcher { contract_address: vrf_addr };
+            let rand_felt: felt252 = vrf.consume_random(Source::Salt(seed.into()));
+
+            // Derivar 5 números en [1,49] a partir del random consumido
+            let base_seed: u64 = felt_to_u64(rand_felt);
+            let mut nums = derive_five_unique_numbers(base_seed);
+
+            // persistir números
+            let n1 = *nums.at(0);
+            let n2 = *nums.at(1);
+            let n3 = *nums.at(2);
+            let n4 = *nums.at(3);
+            let n5 = *nums.at(4);
+
+            self.numbers_by_generation.write((next_id, 0_u8), n1);
+            self.numbers_by_generation.write((next_id, 1_u8), n2);
+            self.numbers_by_generation.write((next_id, 2_u8), n3);
+            self.numbers_by_generation.write((next_id, 3_u8), n4);
+            self.numbers_by_generation.write((next_id, 4_u8), n5);
+
+            self.generation_status.write(next_id, STATUS_COMPLETED);
+            self.fulfilled_at.write(next_id, get_block_timestamp());
+            self.completed_counter.write(self.completed_counter.read() + 1_u64);
+
+            self.emit(
+                GenerationCompleted {
+                    id: next_id,
+                    n1: n1,
+                    n2: n2,
+                    n3: n3,
+                    n4: n4,
+                    n5: n5,
+                    timestamp: get_block_timestamp(),
+                    is_test: false,
+                },
+            );
 
             next_id
         }
@@ -342,6 +371,18 @@ pub mod Randomness {
     }
 
     // ===== Helpers =====
+    fn felt_to_u64(value: felt252) -> u64 {
+        let maybe_u128: Option<u128> = value.try_into();
+        match maybe_u128 {
+            Option::Some(v_u128) => {
+                let mod64_divisor: u128 = 18446744073709551616_u128; // 2^64
+                let mod64: u128 = v_u128 % mod64_divisor;
+                let out: u64 = mod64.try_into().unwrap();
+                out
+            },
+            Option::None => { 0_u64 },
+        }
+    }
     fn derive_seed_from_words(words: Span<felt252>) -> u64 {
         if words.len() == 0_usize { return get_block_timestamp(); }
         let w0: felt252 = *words.at(0);
