@@ -3,6 +3,484 @@
  * You should not edit it manually or your changes might be overwritten.
  */
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  sepolia: {
+    Randomness: {
+      address:
+        "0xd29d28962c827f3451c7740adacef5ccf3913aa6bc358c2fccca65331d216b",
+      abi: [
+        {
+          type: "impl",
+          name: "RandomnessImpl",
+          interface_name:
+            "starklotto_adapter_vrf::Randomness::IRandomnessLottery",
+        },
+        {
+          type: "interface",
+          name: "starklotto_adapter_vrf::Randomness::IRandomnessLottery",
+          items: [
+            {
+              type: "function",
+              name: "request_randomness_prod",
+              inputs: [
+                {
+                  name: "seed",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "callback_fee_limit",
+                  type: "core::integer::u128",
+                },
+                {
+                  name: "publish_delay",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "devnet_generate",
+              inputs: [
+                {
+                  name: "seed",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_generation_numbers",
+              inputs: [
+                {
+                  name: "id",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<core::integer::u8>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_generation_status",
+              inputs: [
+                {
+                  name: "id",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u8",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_generation_timestamps",
+              inputs: [
+                {
+                  name: "id",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "(core::integer::u64, core::integer::u64)",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_latest_id",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "OwnableImpl",
+          interface_name: "openzeppelin_access::ownable::interface::IOwnable",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_access::ownable::interface::IOwnable",
+          items: [
+            {
+              type: "function",
+              name: "owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "transfer_ownership",
+              inputs: [
+                {
+                  name: "new_owner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounce_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::bool",
+          variants: [
+            {
+              name: "False",
+              type: "()",
+            },
+            {
+              name: "True",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "vrf_coordinator",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "dev_mode",
+              type: "core::bool",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::array::Span::<core::felt252>",
+          members: [
+            {
+              name: "snapshot",
+              type: "@core::array::Array::<core::felt252>",
+            },
+          ],
+        },
+        {
+          type: "function",
+          name: "receive_random_words",
+          inputs: [
+            {
+              name: "requester_address",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "request_id",
+              type: "core::integer::u64",
+            },
+            {
+              name: "random_words",
+              type: "core::array::Span::<core::felt252>",
+            },
+            {
+              name: "_calldata",
+              type: "core::array::Array::<core::felt252>",
+            },
+          ],
+          outputs: [],
+          state_mutability: "external",
+        },
+        {
+          type: "function",
+          name: "mark_generation_failed",
+          inputs: [
+            {
+              name: "id",
+              type: "core::integer::u64",
+            },
+            {
+              name: "code",
+              type: "core::felt252",
+            },
+          ],
+          outputs: [],
+          state_mutability: "external",
+        },
+        {
+          type: "function",
+          name: "set_vrf_coordinator",
+          inputs: [
+            {
+              name: "addr",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+          ],
+          outputs: [],
+          state_mutability: "external",
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnershipTransferred",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+              kind: "nested",
+            },
+            {
+              name: "OwnershipTransferStarted",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "starklotto_adapter_vrf::Randomness::Randomness::GenerationRequested",
+          kind: "struct",
+          members: [
+            {
+              name: "id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "requester",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "is_test",
+              type: "core::bool",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "starklotto_adapter_vrf::Randomness::Randomness::GenerationCompleted",
+          kind: "struct",
+          members: [
+            {
+              name: "id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "n1",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n2",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n3",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n4",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n5",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "is_test",
+              type: "core::bool",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "starklotto_adapter_vrf::Randomness::Randomness::GenerationFailed",
+          kind: "struct",
+          members: [
+            {
+              name: "id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "code",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "starklotto_adapter_vrf::Randomness::Randomness::TestGeneration",
+          kind: "struct",
+          members: [
+            {
+              name: "id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "n1",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n2",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n3",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n4",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "n5",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "starklotto_adapter_vrf::Randomness::Randomness::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "GenerationRequested",
+              type: "starklotto_adapter_vrf::Randomness::Randomness::GenerationRequested",
+              kind: "nested",
+            },
+            {
+              name: "GenerationCompleted",
+              type: "starklotto_adapter_vrf::Randomness::Randomness::GenerationCompleted",
+              kind: "nested",
+            },
+            {
+              name: "GenerationFailed",
+              type: "starklotto_adapter_vrf::Randomness::Randomness::GenerationFailed",
+              kind: "nested",
+            },
+            {
+              name: "TestGeneration",
+              type: "starklotto_adapter_vrf::Randomness::Randomness::TestGeneration",
+              kind: "nested",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x76a555fd67aedeffa7bc61aeda96f5f6ce46cb29a7a508768071faf0971e0ea",
+    },
+  },
+} as const;
 
 export default deployedContracts;
