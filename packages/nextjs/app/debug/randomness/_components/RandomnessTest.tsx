@@ -8,7 +8,7 @@ import { useTargetNetwork } from "~~/hooks/scaffold-stark/useTargetNetwork";
 import { notification } from "~~/utils/scaffold-stark";
 import { getAllContracts } from "~~/utils/scaffold-stark/contractsData";
 import { Address } from "~~/components/scaffold-stark";
-import { Call, CallData } from "starknet";
+import { Call, CallData, num } from "starknet";
 
 // Dirección del VRF provider de Cartridge en testnet
 // IMPORTANTE: Esta dirección debe ser actualizada con la dirección real proporcionada por Cartridge
@@ -113,10 +113,15 @@ export const RandomnessTest = () => {
       // 1. Llamar al VRF provider: request_random(caller, Source::Salt(seed))
       // 2. Llamar al contrato consumidor: request_randomness_prod(seed, fee_limit, delay)
 
-      const requestCalldata = CallData.compile({
-        caller: account.address,
-        source: [1n, seedValue],
-      });
+      const seedHex = num.toHex(seedValue);
+      const callbackFeeLimitHex = num.toHex(BigInt(callbackFeeLimit));
+      const publishDelayHex = num.toHex(BigInt(publishDelay));
+
+      const requestCalldata = [
+        randomnessContract.address,
+        "1",
+        seedValue.toString(),
+      ];
 
       const calls: Call[] = [
         {
@@ -128,12 +133,14 @@ export const RandomnessTest = () => {
           contractAddress: randomnessContract.address,
           entrypoint: "request_randomness_prod",
           calldata: [
-            seedValue.toString(),
-            BigInt(callbackFeeLimit).toString(),
-            BigInt(publishDelay).toString(),
+            seedHex,
+            callbackFeeLimitHex,
+            publishDelayHex,
           ],
         },
       ];
+
+      console.log("Calldata VRF", requestCalldata);
 
       console.log("Solicitando aleatoriedad via multicall", {
         vrfProvider: VRF_PROVIDER_ADDRESS,
@@ -142,6 +149,7 @@ export const RandomnessTest = () => {
         callbackFeeLimit,
         publishDelay,
         account: account?.address,
+        caller: randomnessContract.address,
         calls,
       });
 

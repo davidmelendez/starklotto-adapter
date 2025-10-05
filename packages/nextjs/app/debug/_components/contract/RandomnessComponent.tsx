@@ -9,7 +9,7 @@ import { notification } from "~~/utils/scaffold-stark";
 import { ContractName } from "~~/utils/scaffold-stark/contract";
 import { Address } from "~~/components/scaffold-stark";
 import { Address as AddressType } from "@starknet-react/chains";
-import { Call, CallData } from "starknet";
+import { Call, CallData, num } from "starknet";
 
 // Dirección del VRF provider de Cartridge en testnet
 // Esta dirección debe ser actualizada con la dirección real proporcionada por Cartridge
@@ -106,10 +106,15 @@ export const RandomnessComponent = ({
       const callbackFeeLimitValue = BigInt(callbackFeeLimit);
       const publishDelayValue = BigInt(publishDelay);
 
-      const requestCalldata = CallData.compile({
-        caller: account.address,
-        source: [1n, seedValue],
-      });
+      const seedHex = num.toHex(seedValue);
+      const callbackFeeLimitHex = num.toHex(callbackFeeLimitValue);
+      const publishDelayHex = num.toHex(publishDelayValue);
+
+      const requestCalldata = [
+        contractAddress as string,
+        "1",
+        seedValue.toString(),
+      ];
 
       const calls: Call[] = [
         {
@@ -121,12 +126,14 @@ export const RandomnessComponent = ({
           contractAddress: contractAddress as string,
           entrypoint: "request_randomness_prod",
           calldata: [
-            seedValue.toString(),
-            callbackFeeLimitValue.toString(),
-            publishDelayValue.toString(),
+            seedHex,
+            callbackFeeLimitHex,
+            publishDelayHex,
           ],
         },
       ];
+
+      console.log("Calldata VRF", requestCalldata);
 
       console.log("Solicitando aleatoriedad via multicall", {
         vrfProvider: VRF_PROVIDER_ADDRESS,
@@ -135,6 +142,7 @@ export const RandomnessComponent = ({
         callbackFeeLimit,
         publishDelay,
         account: account?.address,
+        caller: contractAddress,
         calls,
       });
 

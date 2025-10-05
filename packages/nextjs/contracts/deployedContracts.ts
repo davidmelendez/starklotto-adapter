@@ -7,7 +7,7 @@ const deployedContracts = {
   sepolia: {
     Randomness: {
       address:
-        "0xd29d28962c827f3451c7740adacef5ccf3913aa6bc358c2fccca65331d216b",
+        "0x3fba1c5d368cdd136a196f4981640a94a07918316d46066f0586120eb6f42d0",
       abi: [
         {
           type: "impl",
@@ -478,7 +478,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x76a555fd67aedeffa7bc61aeda96f5f6ce46cb29a7a508768071faf0971e0ea",
+        "0x342eab9caa3364fe668dfeaddf7c5ff2516f791c35e39dc7065c00e1b9fc017",
     },
   },
 } as const;

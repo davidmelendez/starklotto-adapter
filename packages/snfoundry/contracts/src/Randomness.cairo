@@ -401,13 +401,15 @@ pub mod Randomness {
 
     fn derive_five_unique_numbers(seed: u64) -> Array<u8> {
         let mut out: Array<u8> = array![];
-        let mut state: u64 = seed;
+        let mut state_u128: u128 = seed.into();
         // LCG parameters over 2^64 domain
-        let a: u64 = 6364136223846793005_u64; // multiplier
-        let c: u64 = 1442695040888963407_u64; // increment
+        let a: u128 = 6364136223846793005_u128; // multiplier
+        let c: u128 = 1442695040888963407_u128; // increment
+        let modulus: u128 = 18446744073709551616_u128; // 2^64
 
         while out.len() < 5_usize {
-            state = state * a + c;
+            state_u128 = (state_u128 * a + c) % modulus;
+            let state: u64 = state_u128.try_into().unwrap();
             // candidate in [1,49]
             let candidate: u8 = ((state % 49_u64) + 1_u64).try_into().unwrap();
             if !contains_u8(@out, candidate) {
