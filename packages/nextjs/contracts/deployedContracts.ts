@@ -7,7 +7,7 @@ const deployedContracts = {
   sepolia: {
     Randomness: {
       address:
-        "0x3fba1c5d368cdd136a196f4981640a94a07918316d46066f0586120eb6f42d0",
+        "0x31cdafdd0fc1a80d57f3290afff3ba0a62e9d2c628e35c81eb55e05879f0f4f",
       abi: [
         {
           type: "impl",

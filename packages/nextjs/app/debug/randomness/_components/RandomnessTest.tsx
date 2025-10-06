@@ -119,8 +119,8 @@ export const RandomnessTest = () => {
 
       const requestCalldata = [
         randomnessContract.address,
-        "1",
-        seedValue.toString(),
+        "0x1",
+        num.toHex(seedValue),
       ];
 
       const calls: Call[] = [
@@ -427,3 +427,6 @@ export const RandomnessTest = () => {
     </div>
   );
 };
+
+
+
