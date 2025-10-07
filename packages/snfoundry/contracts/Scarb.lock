@@ -4,10 +4,9 @@ version = 1
 [[package]]
 name = "cartridge_vrf"
 version = "0.1.0"
-source = "git+https://github.com/cartridge-gg/vrf.git#9d38baed547e887938a51cbfe9ff7512376b72c2"
+source = "git+https://github.com/cartridge-gg/vrf.git#f748d4acab736464dcd96c5a4d047ed3aeb63801"
 dependencies = [
  "openzeppelin",
- "snforge_std",
  "stark_vrf",
 ]
 
@@ -155,8 +154,9 @@ dependencies = [
 
 [[package]]
 name = "stark_vrf"
-version = "0.1.0"
-source = "git+https://github.com/dojoengine/stark-vrf.git#96d6d2a88b1ef46c4a285d0ccc334237205edae3"
+version = "0.1.1"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:5345a2ec33f50f7e372b74179b0421da022775b72b9de3c51cb15b7530482475"
 
 [[package]]
 name = "starklotto_adapter_vrf"
