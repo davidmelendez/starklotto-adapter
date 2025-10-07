@@ -3,50 +3,60 @@ name: Next.js CI
 on:
   push:
     paths:
+      - "packages/snfoundry/contracts/**"
       - "packages/nextjs/**"
-      - ".github/workflows/**"
   pull_request:
     branches:
       - main
     paths:
       - "packages/nextjs/**"
-      - ".github/workflows/**"
-  workflow_dispatch: {}
+      - "packages/snfoundry/contracts/**"
 
 jobs:
-  nextjs-ci:
-    runs-on: ubuntu-latest
+  ci:
+    runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
+        os: [ubuntu-latest]
         node: [lts/*]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@master
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup node env
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
-          cache-dependency-path: packages/nextjs/yarn.lock
+          cache: "yarn"
+          #cache-dependency-path: packages/nextjs/yarn.lock
 
-      - name: Install dependencies
+      - name: Install dependencies (Next.js)
         run: yarn install --immutable
         working-directory: ./packages/nextjs
 
-      - name: Lint
-        run: yarn lint --max-warnings=0
+      - name: Install scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./.tool-versions
+          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
+
+      - name: Check Code Format
+        run: yarn format:check
+
+      - name: Run Next.js lint
+        run: yarn next:lint --max-warnings=0
         working-directory: ./packages/nextjs
 
-      - name: Type check
-        run: yarn check-types
+      - name: Check typings on Next.js
+        run: yarn next:check-types
         working-directory: ./packages/nextjs
 
-      - name: Run tests
-        run: yarn test --run
+      - name: Run Next.js tests
+        run: yarn test run
         working-directory: ./packages/nextjs
 
-      - name: Build
+      - name: Build Next.js project
         run: yarn build
         working-directory: ./packages/nextjs
