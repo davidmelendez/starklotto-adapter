@@ -78,8 +78,12 @@ export const WriteOnlyFunctionForm = ({
   const handleWrite = async () => {
     // Verificación adicional de seguridad para evitar errores de Account
     if (!account?.address) {
-      console.error("❌ No se pudo obtener la dirección de la cuenta conectada en WriteOnlyFunctionForm");
-      notification.error("No se pudo obtener la dirección de la cuenta conectada. Intenta reconectar tu wallet.");
+      console.error(
+        "❌ No se pudo obtener la dirección de la cuenta conectada en WriteOnlyFunctionForm",
+      );
+      notification.error(
+        "No se pudo obtener la dirección de la cuenta conectada. Intenta reconectar tu wallet.",
+      );
       return;
     }
 

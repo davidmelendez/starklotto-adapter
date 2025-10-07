@@ -12,19 +12,22 @@ import { Call, CallData, num } from "starknet";
 
 // Dirección del VRF provider de Cartridge en testnet
 // IMPORTANTE: Esta dirección debe ser actualizada con la dirección real proporcionada por Cartridge
-const VRF_PROVIDER_ADDRESS = "0x051fea4450da9d6aee758bdeba88b2f665bcbf549d2c61421aa724e9ac0ced8f";
+const VRF_PROVIDER_ADDRESS =
+  "0x051fea4450da9d6aee758bdeba88b2f665bcbf549d2c61421aa724e9ac0ced8f";
 
 export const RandomnessTest = () => {
   const [seed, setSeed] = useState<string>("12345");
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState<string>("");
-  const [generationHistory, setGenerationHistory] = useState<Array<{
-    id: string;
-    seed: string;
-    txHash: string;
-    timestamp: number;
-    numbers?: number[];
-  }>>([]);
+  const [generationHistory, setGenerationHistory] = useState<
+    Array<{
+      id: string;
+      seed: string;
+      txHash: string;
+      timestamp: number;
+      numbers?: number[];
+    }>
+  >([]);
 
   const { status: walletStatus, isConnected, account, chainId } = useAccount();
   const { chain } = useNetwork();
@@ -45,20 +48,27 @@ export const RandomnessTest = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-red-500">Contrato Randomness no encontrado</h1>
-          <p className="mt-4">Asegúrate de que el contrato esté desplegado correctamente.</p>
+          <h1 className="text-3xl font-bold text-red-500">
+            Contrato Randomness no encontrado
+          </h1>
+          <p className="mt-4">
+            Asegúrate de que el contrato esté desplegado correctamente.
+          </p>
         </div>
       </div>
     );
   }
 
-  const writeDisabled = !chain ||
+  const writeDisabled =
+    !chain ||
     chain?.network !== targetNetwork.network ||
     walletStatus === "disconnected";
 
   const handleRequestRandomness = async () => {
     if (!isConnected || writeDisabled) {
-      notification.error("Por favor conecta tu wallet y asegúrate de estar en la red correcta");
+      notification.error(
+        "Por favor conecta tu wallet y asegúrate de estar en la red correcta",
+      );
       return;
     }
 
@@ -66,24 +76,32 @@ export const RandomnessTest = () => {
     console.log("🔍 Estado de cuenta antes de ejecutar multicall:", {
       isConnected,
       accountAddress: account?.address,
-      accountStatus: account ? 'connected' : 'disconnected',
+      accountStatus: account ? "connected" : "disconnected",
       walletStatus,
       chainId,
       chainName: chain?.name,
       accountType: typeof account,
-      accountKeys: account ? Object.keys(account) : 'undefined',
-      hasAddress: account?.hasOwnProperty('address'),
+      accountKeys: account ? Object.keys(account) : "undefined",
+      hasAddress: account?.hasOwnProperty("address"),
       addressType: typeof account?.address,
       accountAddressValid: account?.address && account.address.length > 0,
       accountConstructor: account?.constructor?.name,
       accountPrototype: Object.getPrototypeOf(account)?.constructor?.name,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Verificación adicional de que la dirección es válida antes de proceder
-    if (account?.address && (!account.address.startsWith('0x') || account.address.length !== 66)) {
-      console.error("❌ Dirección de cuenta con formato inválido:", account.address);
-      notification.error("La dirección de la cuenta tiene un formato inválido. Intenta reconectar tu wallet.");
+    if (
+      account?.address &&
+      (!account.address.startsWith("0x") || account.address.length !== 66)
+    ) {
+      console.error(
+        "❌ Dirección de cuenta con formato inválido:",
+        account.address,
+      );
+      notification.error(
+        "La dirección de la cuenta tiene un formato inválido. Intenta reconectar tu wallet.",
+      );
       return;
     }
 
@@ -91,9 +109,11 @@ export const RandomnessTest = () => {
       console.error("❌ No se pudo obtener la dirección de la cuenta:", {
         account,
         isConnected,
-        walletStatus
+        walletStatus,
       });
-      notification.error("No se pudo obtener la dirección de la cuenta conectada. Intenta reconectar tu wallet.");
+      notification.error(
+        "No se pudo obtener la dirección de la cuenta conectada. Intenta reconectar tu wallet.",
+      );
       return;
     }
 
@@ -132,11 +152,7 @@ export const RandomnessTest = () => {
         {
           contractAddress: randomnessContract.address,
           entrypoint: "request_randomness_prod",
-          calldata: [
-            seedHex,
-            callbackFeeLimitHex,
-            publishDelayHex,
-          ],
+          calldata: [seedHex, callbackFeeLimitHex, publishDelayHex],
         },
       ];
 
@@ -166,28 +182,36 @@ export const RandomnessTest = () => {
           timestamp: Date.now(),
         };
 
-        setGenerationHistory(prev => [historyEntry, ...prev]);
+        setGenerationHistory((prev) => [historyEntry, ...prev]);
 
-        console.log("Multicall ejecutado exitosamente", { transactionHash: txHash });
+        console.log("Multicall ejecutado exitosamente", {
+          transactionHash: txHash,
+        });
 
-        notification.success(`Aleatoriedad solicitada exitosamente! Hash: ${txHash}`);
+        notification.success(
+          `Aleatoriedad solicitada exitosamente! Hash: ${txHash}`,
+        );
 
         setTimeout(() => {
           setTxHash();
         }, 5000);
       }
-
     } catch (error: any) {
       console.error("❌ Error ejecutando multicall de aleatoriedad:", error);
 
       // Proporcionar mensajes de error más específicos
       let errorMessage = "Error desconocido al solicitar aleatoriedad";
 
-      if (error.name === "UserRejectedRequestError" || error.message?.includes("User rejected request")) {
-        errorMessage = "Transacción cancelada por el usuario. Por favor, inténtalo de nuevo.";
+      if (
+        error.name === "UserRejectedRequestError" ||
+        error.message?.includes("User rejected request")
+      ) {
+        errorMessage =
+          "Transacción cancelada por el usuario. Por favor, inténtalo de nuevo.";
         console.log("ℹ️ Usuario canceló la transacción en la wallet");
       } else if (error.message?.includes("insufficient")) {
-        errorMessage = "Fondos insuficientes para cubrir los fees de la transacción";
+        errorMessage =
+          "Fondos insuficientes para cubrir los fees de la transacción";
       } else if (error.message?.includes("nonce")) {
         errorMessage = "Error de nonce. Intenta nuevamente";
       } else if (error.message?.includes("network")) {
@@ -208,15 +232,19 @@ export const RandomnessTest = () => {
     if (!consumerContract) return;
 
     try {
-      const numbers = await consumerContract.call("get_generation_numbers", [generationId]);
+      const numbers = await consumerContract.call("get_generation_numbers", [
+        generationId,
+      ]);
       console.log("📊 Números obtenidos:", numbers);
 
       // Actualizar el historial con los números obtenidos
-      setGenerationHistory(prev => prev.map(entry =>
-        entry.id === generationId
-          ? { ...entry, numbers: numbers as number[] }
-          : entry
-      ));
+      setGenerationHistory((prev) =>
+        prev.map((entry) =>
+          entry.id === generationId
+            ? { ...entry, numbers: numbers as number[] }
+            : entry,
+        ),
+      );
 
       notification.success(`Números obtenidos: ${numbers.join(", ")}`);
     } catch (error) {
@@ -232,7 +260,8 @@ export const RandomnessTest = () => {
           🏆 Test de Aleatoriedad con Cartridge VRF
         </h1>
         <p className="text-gray-300 text-lg">
-          Prueba la generación de números aleatorios usando el servicio VRF de Cartridge
+          Prueba la generación de números aleatorios usando el servicio VRF de
+          Cartridge
         </p>
       </div>
 
@@ -245,8 +274,10 @@ export const RandomnessTest = () => {
             </h2>
 
             <p className="text-sm text-gray-300 mb-6">
-              Esta función ejecuta un multicall que primero solicita aleatoriedad al VRF provider de Cartridge,
-              luego consume esa aleatoriedad en el contrato para generar 5 números únicos en el rango [1,49].
+              Esta función ejecuta un multicall que primero solicita
+              aleatoriedad al VRF provider de Cartridge, luego consume esa
+              aleatoriedad en el contrato para generar 5 números únicos en el
+              rango [1,49].
             </p>
 
             {/* Información del contrato */}
@@ -257,11 +288,19 @@ export const RandomnessTest = () => {
 
             {/* Información técnica */}
             <div className="bg-yellow-900/20 p-4 rounded-lg border border-yellow-600 mb-6">
-              <h4 className="font-semibold mb-2 text-yellow-300">📋 Parámetros del Multicall:</h4>
+              <h4 className="font-semibold mb-2 text-yellow-300">
+                📋 Parámetros del Multicall:
+              </h4>
               <div className="space-y-1 text-sm">
-                <p><strong>VRF Provider:</strong> {VRF_PROVIDER_ADDRESS}</p>
-                <p><strong>Callback Fee Limit:</strong> {callbackFeeLimit} wei</p>
-                <p><strong>Publish Delay:</strong> {publishDelay} (sin delay)</p>
+                <p>
+                  <strong>VRF Provider:</strong> {VRF_PROVIDER_ADDRESS}
+                </p>
+                <p>
+                  <strong>Callback Fee Limit:</strong> {callbackFeeLimit} wei
+                </p>
+                <p>
+                  <strong>Publish Delay:</strong> {publishDelay} (sin delay)
+                </p>
               </div>
             </div>
 
@@ -280,7 +319,8 @@ export const RandomnessTest = () => {
                   disabled={isLoading}
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  El seed determina la secuencia aleatoria. Usa diferentes valores para obtener resultados diferentes.
+                  El seed determina la secuencia aleatoria. Usa diferentes
+                  valores para obtener resultados diferentes.
                 </p>
               </div>
 
@@ -288,7 +328,8 @@ export const RandomnessTest = () => {
               {!isConnected && (
                 <div className="bg-red-900/20 p-3 rounded-lg border border-red-600">
                   <p className="text-red-300 text-sm">
-                    ⚠️ Wallet no conectado. Conecta tu wallet para usar esta función.
+                    ⚠️ Wallet no conectado. Conecta tu wallet para usar esta
+                    función.
                   </p>
                 </div>
               )}
@@ -297,7 +338,8 @@ export const RandomnessTest = () => {
               {isConnected && writeDisabled && (
                 <div className="bg-yellow-900/20 p-3 rounded-lg border border-yellow-600">
                   <p className="text-yellow-300 text-sm">
-                    ⚠️ Wallet conectado a red incorrecta. Cambia a {targetNetwork.name}.
+                    ⚠️ Wallet conectado a red incorrecta. Cambia a{" "}
+                    {targetNetwork.name}.
                   </p>
                 </div>
               )}
@@ -309,14 +351,28 @@ export const RandomnessTest = () => {
                     🔍 Estado de cuenta (debugging):
                   </p>
                   <div className="text-xs space-y-1">
-                    <p><strong>Wallet conectado:</strong> {isConnected ? "Sí" : "No"}</p>
-                    <p><strong>Dirección de cuenta:</strong> {account?.address || "No disponible"}</p>
-                    <p><strong>Estado de wallet:</strong> {walletStatus}</p>
-                    <p><strong>Red actual:</strong> {chain?.name || "Desconocida"}</p>
-                    <p><strong>Red objetivo:</strong> {targetNetwork.name}</p>
+                    <p>
+                      <strong>Wallet conectado:</strong>{" "}
+                      {isConnected ? "Sí" : "No"}
+                    </p>
+                    <p>
+                      <strong>Dirección de cuenta:</strong>{" "}
+                      {account?.address || "No disponible"}
+                    </p>
+                    <p>
+                      <strong>Estado de wallet:</strong> {walletStatus}
+                    </p>
+                    <p>
+                      <strong>Red actual:</strong>{" "}
+                      {chain?.name || "Desconocida"}
+                    </p>
+                    <p>
+                      <strong>Red objetivo:</strong> {targetNetwork.name}
+                    </p>
                   </div>
                   <p className="text-orange-300 text-xs mt-2">
-                    💡 Si ves esto, intenta reconectar tu wallet o refrescar la página.
+                    💡 Si ves esto, intenta reconectar tu wallet o refrescar la
+                    página.
                   </p>
                 </div>
               )}
@@ -350,12 +406,22 @@ export const RandomnessTest = () => {
 
           {/* Información adicional */}
           <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600">
-            <h4 className="font-semibold mb-2 text-blue-300">💡 Cómo funciona:</h4>
+            <h4 className="font-semibold mb-2 text-blue-300">
+              💡 Cómo funciona:
+            </h4>
             <ol className="text-sm space-y-1 text-gray-300">
               <li>1. Se ejecuta un multicall con dos pasos</li>
-              <li>2. Primero se solicita aleatoriedad al VRF provider de Cartridge</li>
-              <li>3. Luego se consume esa aleatoriedad en el contrato para generar 5 números únicos [1,49]</li>
-              <li>4. Los números se almacenan en el contrato y se puede consultar usando get_generation_numbers(id)</li>
+              <li>
+                2. Primero se solicita aleatoriedad al VRF provider de Cartridge
+              </li>
+              <li>
+                3. Luego se consume esa aleatoriedad en el contrato para generar
+                5 números únicos [1,49]
+              </li>
+              <li>
+                4. Los números se almacenan en el contrato y se puede consultar
+                usando get_generation_numbers(id)
+              </li>
             </ol>
           </div>
         </div>
@@ -369,7 +435,9 @@ export const RandomnessTest = () => {
           {generationHistory.length === 0 ? (
             <div className="text-center text-gray-400 py-8">
               <p>No hay generaciones aún</p>
-              <p className="text-sm mt-2">Ejecuta la función para ver el historial aquí</p>
+              <p className="text-sm mt-2">
+                Ejecuta la función para ver el historial aquí
+              </p>
             </div>
           ) : (
             <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -391,7 +459,8 @@ export const RandomnessTest = () => {
                   </div>
 
                   <p className="text-xs text-gray-400 mb-2">
-                    Tx: {entry.txHash.substring(0, 10)}...{entry.txHash.substring(entry.txHash.length - 8)}
+                    Tx: {entry.txHash.substring(0, 10)}...
+                    {entry.txHash.substring(entry.txHash.length - 8)}
                   </p>
 
                   {entry.numbers && (
@@ -410,23 +479,35 @@ export const RandomnessTest = () => {
 
       {/* Información de Debug */}
       <div className="mt-8 bg-gray-900/50 p-6 rounded-lg border border-gray-600">
-        <h3 className="text-lg font-semibold text-white mb-4">🔧 Información de Debug</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">
+          🔧 Información de Debug
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <p><strong>Estado de Wallet:</strong> {walletStatus}</p>
-            <p><strong>Conectado:</strong> {isConnected ? "Sí" : "No"}</p>
-            <p><strong>Red Actual:</strong> {chain?.name || "Ninguna"}</p>
+            <p>
+              <strong>Estado de Wallet:</strong> {walletStatus}
+            </p>
+            <p>
+              <strong>Conectado:</strong> {isConnected ? "Sí" : "No"}
+            </p>
+            <p>
+              <strong>Red Actual:</strong> {chain?.name || "Ninguna"}
+            </p>
           </div>
           <div>
-            <p><strong>Red Objetivo:</strong> {targetNetwork.name}</p>
-            <p><strong>Contrato:</strong> {randomnessContract.address}</p>
-            <p><strong>Cuenta:</strong> {account?.address?.substring(0, 10)}...{account?.address?.substring(account.address.length - 8)}</p>
+            <p>
+              <strong>Red Objetivo:</strong> {targetNetwork.name}
+            </p>
+            <p>
+              <strong>Contrato:</strong> {randomnessContract.address}
+            </p>
+            <p>
+              <strong>Cuenta:</strong> {account?.address?.substring(0, 10)}...
+              {account?.address?.substring(account.address.length - 8)}
+            </p>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-
-

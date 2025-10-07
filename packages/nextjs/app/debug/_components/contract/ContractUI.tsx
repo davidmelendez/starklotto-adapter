@@ -135,7 +135,10 @@ export const ContractUI = ({
                           contractName={contractName}
                           contractAddress={deployedContractData.address as any}
                           onSuccess={(txHash, generationId) => {
-                            console.log("🎉 Aleatoriedad generada exitosamente:", { txHash, generationId });
+                            console.log(
+                              "🎉 Aleatoriedad generada exitosamente:",
+                              { txHash, generationId },
+                            );
                             triggerRefreshDisplayVariables();
                           }}
                         />
