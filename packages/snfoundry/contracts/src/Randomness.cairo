@@ -17,9 +17,8 @@ pub trait IRandomnessLottery<TContractState> {
 
 #[starknet::contract]
 pub mod Randomness {
-    // Cartridge VRF dispatcher (según README de cartridge-gg/vrf)
-    use cartridge_vrf::IVrfProviderDispatcher;
-    use cartridge_vrf::{IVrfProviderDispatcherTrait, Source};
+    // Cartridge VRF dispatcher (README of cartridge-gg/vrf)
+    use cartridge_vrf::{IVrfProviderDispatcher, IVrfProviderDispatcherTrait, Source};
     use openzeppelin_access::ownable::OwnableComponent;
     use starknet::storage::{
         Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
