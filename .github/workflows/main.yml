@@ -42,16 +42,18 @@ jobs:
           tool-versions: ./packages/snfoundry/contracts/.tool-versions
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
-      - name: Install snfoundryup
-        uses: foundry-rs/setup-snfoundry@v3
-        with:
-          tool-versions: ./packages/snfoundry/contracts/.tool-versions
+      # Install snfoundry manually to avoid automatic test execution
+      - name: Install snfoundry
+        run: |
+          curl -L https://github.com/foundry-rs/starknet-foundry/releases/download/v0.48.0/snforge-v0.48.0-linux-amd64.tar.gz | tar -xz
+          sudo mv snforge-v0.48.0-linux-amd64/snforge /usr/local/bin/snforge
+          sudo chmod +x /usr/local/bin/snforge
 
       - name: Clean and Build Contracts
         run: |
           cd packages/snfoundry/contracts
           scarb clean
-          yarn compile
+          scarb build
 
       # TODO: Uncomment when tests are implemented
       # - name: Run smart contract tests
