@@ -26,7 +26,7 @@ pub mod Randomness {
         StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, get_block_timestamp, get_caller_address, get_contract_address,
+        ContractAddress, get_block_timestamp, get_caller_address,
     };
     use super::IRandomnessLottery;
 
@@ -411,7 +411,7 @@ pub mod Randomness {
             state_u128 = (state_u128 * a + c) % modulus;
             let state: u64 = state_u128.try_into().unwrap();
             // candidate in [1,49]
-            let candidate: u8 = ((state % 49_u64) + 1_u64).try_into().unwrap();
+            let candidate: u8 = (((state % 49_u64) + 1_u64) % 256_u64).try_into().unwrap();
             if !contains_u8(@out, candidate) {
                 out.append(candidate);
             }

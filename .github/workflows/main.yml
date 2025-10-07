@@ -39,16 +39,19 @@ jobs:
       - name: Install scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          tool-versions: ./.tool-versions
+          tool-versions: ./packages/snfoundry/contracts/.tool-versions
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
       - name: Install snfoundryup
         uses: foundry-rs/setup-snfoundry@v3
         with:
-          tool-versions: ./.tool-versions
+          tool-versions: ./packages/snfoundry/contracts/.tool-versions
 
-      - name: Build Contracts
-        run: yarn compile
+      - name: Clean and Build Contracts
+        run: |
+          cd packages/snfoundry/contracts
+          scarb clean
+          yarn compile
 
       - name: Run smart contract tests
         run: yarn test
