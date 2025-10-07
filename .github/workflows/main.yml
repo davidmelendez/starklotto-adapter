@@ -1,35 +1,37 @@
 name: Next.js CI
 
-# NOTE: Contracts CI temporarily disabled to prevent automatic snforge test execution
-# To re-enable contracts CI:
-# 1. Uncomment the paths in the 'on:' section below
-# 2. Remove the 'if:' condition from the job
-# 3. Uncomment and modify the snfoundry installation step as needed
-# 4. Uncomment the test and format check steps when ready
+# NOTE: Split workflow - Next.js CI runs automatically, Contracts CI runs manually only
 #
-# To run contracts CI manually when needed, you can:
-# - Create a PR with contracts changes (CI will run for Next.js parts only)
-# - Or use workflow_dispatch trigger if added to this file
+# WORKFLOW STRUCTURE:
+# 1. nextjs-ci job: Runs automatically on Next.js changes or manual dispatch
+# 2. compile-contracts job: Runs ONLY when manually triggered with workflow_dispatch
+#
+# This prevents automatic snforge test execution while allowing manual contract compilation
+#
+# MANUAL EXECUTION:
+# - Go to Actions tab in GitHub
+# - Select "Next.js CI" workflow
+# - Click "Run workflow" button
+# - This runs both Next.js CI and Cairo contract compilation
+#
+# IMPORTANT: No automatic snforge test execution occurs in this workflow
 
 on:
   push:
     paths:
-      # Temporarily exclude contracts directory to prevent automatic test execution
-      # - "packages/snfoundry/contracts/**"
       - "packages/nextjs/**"
   pull_request:
     branches:
       - main
     paths:
-      # Temporarily exclude contracts directory to prevent automatic test execution
-      # - "packages/nextjs/**"
-      - "packages/snfoundry/contracts/**"
+      - "packages/nextjs/**"
+  workflow_dispatch:  # Allow manual execution
 
 jobs:
-  ci:
+  # Main Next.js CI job
+  nextjs-ci:
     runs-on: ${{ matrix.os }}
-    # Only run for Next.js changes or when explicitly needed for contracts
-    # Note: Contracts CI is temporarily disabled - uncomment paths above to re-enable
+    # Runs automatically on Next.js changes or when manually dispatched
 
     strategy:
       matrix:
@@ -57,27 +59,8 @@ jobs:
           tool-versions: ./packages/snfoundry/contracts/.tool-versions
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
-      # Skip snfoundry installation - not needed until tests are implemented
-      # When tests are needed, uncomment and modify this step:
-      # - name: Install snfoundry
-      #   run: |
-      #     curl -L https://github.com/foundry-rs/starknet-foundry/releases/download/v0.48.0/snforge-v0.48.0-linux-amd64.tar.gz | tar -xz
-      #     sudo mv snforge-v0.48.0-linux-amd64/snforge /usr/local/bin/snforge
-      #     sudo chmod +x /usr/local/bin/snforge
-
-      - name: Clean and Build Contracts
-        run: |
-          cd packages/snfoundry/contracts
-          scarb clean
-          scarb build
-
-      # TODO: Uncomment when Cairo smart contract tests are implemented
-      # - name: Run smart contract tests
-      #   run: yarn test
-
-      # TODO: Uncomment when Cairo code formatting checks are needed
-      # - name: Check Code Format
-      #   run: yarn format:check
+      # Note: snfoundry installation moved to separate compile-contracts job
+      # No snforge tests or contract compilation in this job
 
       - name: Run Next.js lint
         run: yarn next:lint --max-warnings=0
@@ -94,3 +77,29 @@ jobs:
       - name: Build Next.js project
         run: yarn build
         working-directory: ./packages/nextjs
+
+  # Cairo contract compilation job - runs only when manually triggered
+  # This job only compiles contracts, never executes tests
+  compile-contracts:
+    runs-on: ubuntu-latest
+    # Only run when manually triggered with workflow_dispatch
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Install scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./packages/snfoundry/contracts/.tool-versions
+          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
+
+      # Build Cairo contracts - ONLY compilation, no snforge, no tests
+      - name: Build Cairo Contracts
+        run: |
+          echo "🔨 Compiling Cairo contracts..."
+          cd packages/snfoundry/contracts
+          scarb clean
+          scarb build
+          echo "✅ Cairo contracts compiled successfully"
