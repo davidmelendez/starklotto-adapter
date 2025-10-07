@@ -1,10 +1,7 @@
 #[starknet::interface]
 pub trait IRandomnessLottery<TContractState> {
     fn request_randomness_prod(
-        ref self: TContractState,
-        seed: u64,
-        callback_fee_limit: u128,
-        publish_delay: u64,
+        ref self: TContractState, seed: u64, callback_fee_limit: u128, publish_delay: u64,
     ) -> u64;
 
     fn devnet_generate(ref self: TContractState, seed: u64) -> u64;
@@ -20,20 +17,16 @@ pub trait IRandomnessLottery<TContractState> {
 
 #[starknet::contract]
 pub mod Randomness {
+    // Cartridge VRF dispatcher (según README de cartridge-gg/vrf)
+    use cartridge_vrf::IVrfProviderDispatcher;
+    use cartridge_vrf::{IVrfProviderDispatcherTrait, Source};
     use openzeppelin_access::ownable::OwnableComponent;
     use starknet::storage::{
         Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
         StoragePointerWriteAccess,
     };
-    use starknet::{
-        ContractAddress, get_block_timestamp, get_caller_address,
-    };
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
     use super::IRandomnessLottery;
-
-    // Cartridge VRF dispatcher (según README de cartridge-gg/vrf)
-    use cartridge_vrf::IVrfProviderDispatcher;
-    use cartridge_vrf::IVrfProviderDispatcherTrait;
-    use cartridge_vrf::Source;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -140,10 +133,7 @@ pub mod Randomness {
     #[abi(embed_v0)]
     impl RandomnessImpl of IRandomnessLottery<ContractState> {
         fn request_randomness_prod(
-            ref self: ContractState,
-            seed: u64,
-            callback_fee_limit: u128,
-            publish_delay: u64,
+            ref self: ContractState, seed: u64, callback_fee_limit: u128, publish_delay: u64,
         ) -> u64 {
             // anyone can request; adjust to onlyOwner if needed
             let next_id = self.generation_counter.read() + 1_u64;
@@ -156,14 +146,15 @@ pub mod Randomness {
             // Optional: correlate with a VRF request id (0 if unknown at this point)
             self.request_id_by_generation.write(next_id, 0_u64);
 
-            self.emit(
-                GenerationRequested {
-                    id: next_id,
-                    requester: get_caller_address(),
-                    timestamp: get_block_timestamp(),
-                    is_test: false,
-                },
-            );
+            self
+                .emit(
+                    GenerationRequested {
+                        id: next_id,
+                        requester: get_caller_address(),
+                        timestamp: get_block_timestamp(),
+                        is_test: false,
+                    },
+                );
 
             // Consumo sincrónico de aleatorio usando Cartridge VRF.
             // El caller debe prefijar la multicall con `request_random(caller, source)`.
@@ -193,18 +184,19 @@ pub mod Randomness {
             self.fulfilled_at.write(next_id, get_block_timestamp());
             self.completed_counter.write(self.completed_counter.read() + 1_u64);
 
-            self.emit(
-                GenerationCompleted {
-                    id: next_id,
-                    n1: n1,
-                    n2: n2,
-                    n3: n3,
-                    n4: n4,
-                    n5: n5,
-                    timestamp: get_block_timestamp(),
-                    is_test: false,
-                },
-            );
+            self
+                .emit(
+                    GenerationCompleted {
+                        id: next_id,
+                        n1: n1,
+                        n2: n2,
+                        n3: n3,
+                        n4: n4,
+                        n5: n5,
+                        timestamp: get_block_timestamp(),
+                        is_test: false,
+                    },
+                );
 
             next_id
         }
@@ -236,17 +228,18 @@ pub mod Randomness {
             self.fulfilled_at.write(next_id, get_block_timestamp());
             self.completed_counter.write(self.completed_counter.read() + 1_u64);
 
-            self.emit(
-                TestGeneration {
-                    id: next_id,
-                    n1: n1,
-                    n2: n2,
-                    n3: n3,
-                    n4: n4,
-                    n5: n5,
-                    timestamp: get_block_timestamp(),
-                },
-            );
+            self
+                .emit(
+                    TestGeneration {
+                        id: next_id,
+                        n1: n1,
+                        n2: n2,
+                        n3: n3,
+                        n4: n4,
+                        n5: n5,
+                        timestamp: get_block_timestamp(),
+                    },
+                );
 
             next_id
         }
@@ -274,7 +267,9 @@ pub mod Randomness {
             (req, ful)
         }
 
-        fn get_latest_id(self: @ContractState) -> u64 { self.generation_counter.read() }
+        fn get_latest_id(self: @ContractState) -> u64 {
+            self.generation_counter.read()
+        }
     }
 
     // This callback is intended to be called by the VRF coordinator (Cartridge)
@@ -304,14 +299,15 @@ pub mod Randomness {
             self.requested_at.write(id, get_block_timestamp());
             self.request_id_by_generation.write(id, request_id);
             self.generation_by_request_id.write(request_id, id);
-            self.emit(
-                GenerationRequested {
-                    id: id,
-                    requester: requester_address,
-                    timestamp: get_block_timestamp(),
-                    is_test: false,
-                },
-            );
+            self
+                .emit(
+                    GenerationRequested {
+                        id: id,
+                        requester: requester_address,
+                        timestamp: get_block_timestamp(),
+                        is_test: false,
+                    },
+                );
         }
 
         // Defensive checks
@@ -338,18 +334,19 @@ pub mod Randomness {
         self.fulfilled_at.write(id, get_block_timestamp());
         self.completed_counter.write(self.completed_counter.read() + 1_u64);
 
-        self.emit(
-            GenerationCompleted {
-                id: id,
-                n1: n1,
-                n2: n2,
-                n3: n3,
-                n4: n4,
-                n5: n5,
-                timestamp: get_block_timestamp(),
-                is_test: false,
-            },
-        );
+        self
+            .emit(
+                GenerationCompleted {
+                    id: id,
+                    n1: n1,
+                    n2: n2,
+                    n3: n3,
+                    n4: n4,
+                    n5: n5,
+                    timestamp: get_block_timestamp(),
+                    is_test: false,
+                },
+            );
     }
 
     #[external(v0)]
@@ -384,7 +381,9 @@ pub mod Randomness {
         }
     }
     fn derive_seed_from_words(words: Span<felt252>) -> u64 {
-        if words.len() == 0_usize { return get_block_timestamp(); }
+        if words.len() == 0_usize {
+            return get_block_timestamp();
+        }
         let w0: felt252 = *words.at(0);
         let maybe_u128: Option<u128> = w0.try_into();
         match maybe_u128 {
@@ -415,7 +414,7 @@ pub mod Randomness {
             if !contains_u8(@out, candidate) {
                 out.append(candidate);
             }
-        };
+        }
         out
     }
 
@@ -423,11 +422,13 @@ pub mod Randomness {
         let mut i: usize = 0_usize;
         let mut found: bool = false;
         while i < arr.len() {
-            if *arr.at(i) == value { found = true; break; }
+            if *arr.at(i) == value {
+                found = true;
+                break;
+            }
             i = i + 1_usize;
-        };
+        }
         found
     }
 }
-
 
