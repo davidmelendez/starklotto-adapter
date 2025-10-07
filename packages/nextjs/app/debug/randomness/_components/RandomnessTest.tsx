@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useNetwork } from "@starknet-react/core";
+import { useNetwork, useContract, useReadContract } from "@starknet-react/core";
 import { useAccount } from "~~/hooks/useAccount";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
 import { useTargetNetwork } from "~~/hooks/scaffold-stark/useTargetNetwork";
@@ -193,7 +193,7 @@ export const RandomnessTest = () => {
         );
 
         setTimeout(() => {
-          setTxHash();
+          setTxHash("");
         }, 5000);
       }
     } catch (error: any) {
@@ -229,28 +229,13 @@ export const RandomnessTest = () => {
   };
 
   const fetchGenerationNumbers = async (generationId: string) => {
-    if (!consumerContract) return;
-
-    try {
-      const numbers = await consumerContract.call("get_generation_numbers", [
-        generationId,
-      ]);
-      console.log("📊 Números obtenidos:", numbers);
-
-      // Actualizar el historial con los números obtenidos
-      setGenerationHistory((prev) =>
-        prev.map((entry) =>
-          entry.id === generationId
-            ? { ...entry, numbers: numbers as number[] }
-            : entry,
-        ),
-      );
-
-      notification.success(`Números obtenidos: ${numbers.join(", ")}`);
-    } catch (error) {
-      console.error("Error obteniendo números:", error);
-      notification.error("Error obteniendo los números de la generación");
-    }
+    // TODO: Implementar lectura de números usando useScaffoldReadContract
+    // Por ahora, esta función está deshabilitada hasta implementar correctamente
+    // la integración con el contrato para leer get_generation_numbers
+    notification.info(
+      "Función de lectura de números en desarrollo. Usa el debug UI para consultar el contrato directamente."
+    );
+    console.log("📊 Solicitud para obtener números de generación:", generationId);
   };
 
   return (
