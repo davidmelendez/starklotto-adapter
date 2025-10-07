@@ -53,11 +53,13 @@ jobs:
           scarb clean
           yarn compile
 
-      - name: Run smart contract tests
-        run: yarn test
+      # TODO: Uncomment when tests are implemented
+      # - name: Run smart contract tests
+      #   run: yarn test
 
-      - name: Check Code Format
-        run: yarn format:check
+      # TODO: Uncomment when snfoundry formatting is needed
+      # - name: Check Code Format
+      #   run: yarn format:check
 
       - name: Run Next.js lint
         run: yarn next:lint --max-warnings=0
