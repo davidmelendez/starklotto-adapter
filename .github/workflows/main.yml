@@ -3,18 +3,20 @@ name: Next.js CI
 # NOTE: Split workflow - Next.js CI runs automatically, Contracts CI runs manually only
 #
 # WORKFLOW STRUCTURE:
-# 1. nextjs-ci job: Runs automatically on Next.js changes or manual dispatch
-# 2. compile-contracts job: Runs ONLY when manually triggered with workflow_dispatch
+# 1. nextjs-ci job: Runs automatically on Next.js changes, never touches contracts
+# 2. compile-contracts job: Runs ONLY when manually triggered with [contracts] in commit message
 #
-# This prevents automatic snforge test execution while allowing manual contract compilation
+# This completely prevents automatic snforge test execution while allowing manual contract compilation
 #
-# MANUAL EXECUTION:
+# MANUAL EXECUTION FOR CONTRACTS:
 # - Go to Actions tab in GitHub
 # - Select "Next.js CI" workflow
 # - Click "Run workflow" button
-# - This runs both Next.js CI and Cairo contract compilation
+# - In the commit message field, add [contracts] to trigger contract compilation
+# - Example: "fix: update contract [contracts]"
 #
 # IMPORTANT: No automatic snforge test execution occurs in this workflow
+# Contract compilation only runs when [contracts] is in the commit message
 
 on:
   push:
@@ -28,10 +30,11 @@ on:
   workflow_dispatch:  # Allow manual execution
 
 jobs:
-  # Main Next.js CI job
+  # Main Next.js CI job - ONLY for Next.js changes
   nextjs-ci:
     runs-on: ${{ matrix.os }}
-    # Runs automatically on Next.js changes or when manually dispatched
+    # Only runs for Next.js changes - NO contracts, NO snforge
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
 
     strategy:
       matrix:
@@ -59,8 +62,8 @@ jobs:
           tool-versions: ./packages/snfoundry/contracts/.tool-versions
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
-      # Note: snfoundry installation moved to separate compile-contracts job
-      # No snforge tests or contract compilation in this job
+      # Note: This job ONLY handles Next.js - no snforge, no contract compilation
+      # Contract compilation is in separate compile-contracts job
 
       - name: Run Next.js lint
         run: yarn next:lint --max-warnings=0
@@ -78,12 +81,12 @@ jobs:
         run: yarn build
         working-directory: ./packages/nextjs
 
-  # Cairo contract compilation job - runs only when manually triggered
+  # Cairo contract compilation job - runs ONLY when manually triggered for contracts
   # This job only compiles contracts, never executes tests
   compile-contracts:
     runs-on: ubuntu-latest
-    # Only run when manually triggered with workflow_dispatch
-    if: github.event_name == 'workflow_dispatch'
+    # Only run when manually triggered AND specifically for contracts
+    if: github.event_name == 'workflow_dispatch' && contains(github.event.head_commit.message, '[contracts]')
 
     steps:
       - name: Checkout
