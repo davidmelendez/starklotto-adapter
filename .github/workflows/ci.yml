@@ -42,13 +42,14 @@ jobs:
         run: scarb build
         working-directory: ./packages/snfoundry/contracts
 
-      - name: List tests
-        run: snforge test -- --list
-        working-directory: ./packages/snfoundry/contracts
+      # Tests deshabilitados - No hay tests implementados actualmente
+      # - name: List tests
+      #   run: snforge test -- --list
+      #   working-directory: ./packages/snfoundry/contracts
 
-      - name: Run snfoundry tests (verbose + logs)
-        run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
-        env:
-          RUST_BACKTRACE: 1
-          SNFORGE_FORMAT: pretty
+      # - name: Run snfoundry tests (verbose + logs)
+      #   run: snforge test -- -v --print-logs
+      #   working-directory: ./packages/snfoundry/contracts
+      #   env:
+      #     RUST_BACKTRACE: 1
+      #     SNFORGE_FORMAT: pretty
