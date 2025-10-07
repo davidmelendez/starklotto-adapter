@@ -1,20 +1,35 @@
 name: Next.js CI
 
+# NOTE: Contracts CI temporarily disabled to prevent automatic snforge test execution
+# To re-enable contracts CI:
+# 1. Uncomment the paths in the 'on:' section below
+# 2. Remove the 'if:' condition from the job
+# 3. Uncomment and modify the snfoundry installation step as needed
+# 4. Uncomment the test and format check steps when ready
+#
+# To run contracts CI manually when needed, you can:
+# - Create a PR with contracts changes (CI will run for Next.js parts only)
+# - Or use workflow_dispatch trigger if added to this file
+
 on:
   push:
     paths:
-      - "packages/snfoundry/contracts/**"
+      # Temporarily exclude contracts directory to prevent automatic test execution
+      # - "packages/snfoundry/contracts/**"
       - "packages/nextjs/**"
   pull_request:
     branches:
       - main
     paths:
-      - "packages/nextjs/**"
+      # Temporarily exclude contracts directory to prevent automatic test execution
+      # - "packages/nextjs/**"
       - "packages/snfoundry/contracts/**"
 
 jobs:
   ci:
     runs-on: ${{ matrix.os }}
+    # Only run for Next.js changes or when explicitly needed for contracts
+    # Note: Contracts CI is temporarily disabled - uncomment paths above to re-enable
 
     strategy:
       matrix:
@@ -42,12 +57,13 @@ jobs:
           tool-versions: ./packages/snfoundry/contracts/.tool-versions
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
-      # Install snfoundry manually to avoid automatic test execution
-      - name: Install snfoundry
-        run: |
-          curl -L https://github.com/foundry-rs/starknet-foundry/releases/download/v0.48.0/snforge-v0.48.0-linux-amd64.tar.gz | tar -xz
-          sudo mv snforge-v0.48.0-linux-amd64/snforge /usr/local/bin/snforge
-          sudo chmod +x /usr/local/bin/snforge
+      # Skip snfoundry installation - not needed until tests are implemented
+      # When tests are needed, uncomment and modify this step:
+      # - name: Install snfoundry
+      #   run: |
+      #     curl -L https://github.com/foundry-rs/starknet-foundry/releases/download/v0.48.0/snforge-v0.48.0-linux-amd64.tar.gz | tar -xz
+      #     sudo mv snforge-v0.48.0-linux-amd64/snforge /usr/local/bin/snforge
+      #     sudo chmod +x /usr/local/bin/snforge
 
       - name: Clean and Build Contracts
         run: |
@@ -55,11 +71,11 @@ jobs:
           scarb clean
           scarb build
 
-      # TODO: Uncomment when tests are implemented
+      # TODO: Uncomment when Cairo smart contract tests are implemented
       # - name: Run smart contract tests
       #   run: yarn test
 
-      # TODO: Uncomment when snfoundry formatting is needed
+      # TODO: Uncomment when Cairo code formatting checks are needed
       # - name: Check Code Format
       #   run: yarn format:check
 
