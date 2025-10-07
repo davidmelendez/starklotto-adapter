@@ -233,9 +233,12 @@ export const RandomnessTest = () => {
     // Por ahora, esta función está deshabilitada hasta implementar correctamente
     // la integración con el contrato para leer get_generation_numbers
     notification.info(
-      "Función de lectura de números en desarrollo. Usa el debug UI para consultar el contrato directamente."
+      "Función de lectura de números en desarrollo. Usa el debug UI para consultar el contrato directamente.",
     );
-    console.log("📊 Solicitud para obtener números de generación:", generationId);
+    console.log(
+      "📊 Solicitud para obtener números de generación:",
+      generationId,
+    );
   };
 
   return (
