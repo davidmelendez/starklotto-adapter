@@ -16,6 +16,7 @@ import {
 } from "~~/utils/scaffold-stark/contract";
 import { ContractVariables } from "./ContractVariables";
 import { ClassHash } from "~~/components/scaffold-stark/ClassHash";
+import { RandomnessComponent } from "./RandomnessComponent";
 
 const ContractWriteMethods = dynamic(
   () =>
@@ -126,10 +127,32 @@ export const ContractUI = ({
                   />
                 )}
                 {activeTab === "write" && (
-                  <ContractWriteMethods
-                    deployedContractData={deployedContractData}
-                    onChange={triggerRefreshDisplayVariables}
-                  />
+                  <>
+                    {/* Mostrar componente personalizado para contrato Randomness */}
+                    {contractName === "Randomness" && (
+                      <div className="mb-8">
+                        <RandomnessComponent
+                          contractName={contractName}
+                          contractAddress={deployedContractData.address as any}
+                          onSuccess={(txHash, generationId) => {
+                            console.log(
+                              "🎉 Aleatoriedad generada exitosamente:",
+                              { txHash, generationId },
+                            );
+                            triggerRefreshDisplayVariables();
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Funciones de escritura estándar para otros contratos */}
+                    {contractName !== "Randomness" && (
+                      <ContractWriteMethods
+                        deployedContractData={deployedContractData}
+                        onChange={triggerRefreshDisplayVariables}
+                      />
+                    )}
+                  </>
                 )}
               </div>
               {deployedContractLoading && (

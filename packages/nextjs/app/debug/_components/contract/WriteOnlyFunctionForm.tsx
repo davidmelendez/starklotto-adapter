@@ -21,6 +21,7 @@ import { InvokeTransactionReceiptResponse } from "starknet";
 import { TxReceipt } from "./TxReceipt";
 import { useTransactor } from "~~/hooks/scaffold-stark";
 import { useAccount } from "~~/hooks/useAccount";
+import { notification } from "~~/utils/scaffold-stark";
 
 type WriteOnlyFunctionFormProps = {
   abi: Abi;
@@ -75,6 +76,17 @@ export const WriteOnlyFunctionForm = ({
   }, [error]);
 
   const handleWrite = async () => {
+    // Verificación adicional de seguridad para evitar errores de Account
+    if (!account?.address) {
+      console.error(
+        "❌ No se pudo obtener la dirección de la cuenta conectada en WriteOnlyFunctionForm",
+      );
+      notification.error(
+        "No se pudo obtener la dirección de la cuenta conectada. Intenta reconectar tu wallet.",
+      );
+      return;
+    }
+
     try {
       await writeTransaction(
         !!contractInstance

@@ -40,12 +40,34 @@ import { green } from "./helpers/colorize-log";
  *
  *
  * @returns {Promise<void>}
- */
 const deployScript = async (): Promise<void> => {
+  await deployContract(
+     {
+       contract: "YourContract",
+       contractName: "YourContractExportName",
+       constructorArgs: {
+         owner: deployer.address,
+       },
+       options: {
+         maxFee: BigInt(1000000000000)
+       }
+     }
+   );
+ };
+
+*/
+
+const deployScript = async (): Promise<void> => {
+  // Dirección del VRF provider de Cartridge en Sepolia testnet
+  const VRF_PROVIDER_ADDRESS =
+    "0x051fea4450da9d6aee758bdeba88b2f665bcbf549d2c61421aa724e9ac0ced8f";
+
   await deployContract({
-    contract: "YourContract",
+    contract: "Randomness",
     constructorArgs: {
       owner: deployer.address,
+      vrf_coordinator: VRF_PROVIDER_ADDRESS,
+      dev_mode: true,
     },
   });
 };

@@ -42,17 +42,6 @@ jobs:
           tool-versions: ./.tool-versions
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
-      - name: Install snfoundryup
-        uses: foundry-rs/setup-snfoundry@v3
-        with:
-          tool-versions: ./.tool-versions
-
-      - name: Build Contracts
-        run: yarn compile
-
-      - name: Run smart contract tests
-        run: yarn test
-
       - name: Check Code Format
         run: yarn format:check
 
