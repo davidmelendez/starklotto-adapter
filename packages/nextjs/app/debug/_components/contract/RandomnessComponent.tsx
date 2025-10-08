@@ -16,6 +16,11 @@ import { Call, CallData, num } from "starknet";
 const VRF_PROVIDER_ADDRESS =
   "0x051fea4450da9d6aee758bdeba88b2f665bcbf549d2c61421aa724e9ac0ced8f";
 
+// Dirección esperada del contrato de Randomness desplegado en testnet
+// Esta dirección se actualiza con cada nuevo deployment para pruebas
+const EXPECTED_RANDOMNESS_CONTRACT_ADDRESS =
+  "0x036BcAC633A4B319190Ad7691E2B92DBfFf8EEF098feba82E6a20488824204F7";
+
 interface RandomnessComponentProps {
   contractName: ContractName;
   contractAddress: AddressType;
@@ -72,12 +77,10 @@ export const RandomnessComponent = ({
     // Verificación adicional de que la dirección es válida antes de proceder
     if (
       account?.address &&
-      (!account.address.startsWith("0x") || account.address.length !== 66)
+      (!account.address.startsWith("0x") ||
+        account.address.length < 3 ||
+        account.address.length > 66)
     ) {
-      console.error(
-        "❌ Dirección de cuenta con formato inválido:",
-        account.address,
-      );
       notification.error(
         "La dirección de la cuenta tiene un formato inválido. Intenta reconectar tu wallet.",
       );
@@ -85,11 +88,6 @@ export const RandomnessComponent = ({
     }
 
     if (!account?.address) {
-      console.error("❌ No se pudo obtener la dirección de la cuenta:", {
-        account,
-        isConnected,
-        walletStatus,
-      });
       notification.error(
         "No se pudo obtener la dirección de la cuenta conectada. Intenta reconectar tu wallet.",
       );
@@ -101,7 +99,6 @@ export const RandomnessComponent = ({
       account?.address ===
       "0x0297fd6c19289a017d50b1b65a07ea4db27596a8fade85c6b9622a3f9a24d2a9"
     ) {
-      console.warn("🚨 CUENTA PROBLEMÁTICA DETECTADA:", account.address);
       notification.error(
         "Se ha detectado una cuenta que puede causar problemas. Intenta reconectar tu wallet o usar una cuenta diferente.",
       );
@@ -113,39 +110,6 @@ export const RandomnessComponent = ({
       return;
     }
 
-    // 🔍 DIAGNÓSTICO: Verificar información del contrato antes de proceder
-    console.log("🔍 DIAGNÓSTICO - Información del contrato:", {
-      contractName,
-      contractAddress,
-      expectedAddress:
-        "0x31cdafdd0fc1a80d57f3290afff3ba0a62e9d2c628e35c81eb55e05879f0f4f",
-      addressMatch:
-        contractAddress ===
-        "0x31cdafdd0fc1a80d57f3290afff3ba0a62e9d2c628e35c81eb55e05879f0f4f",
-      chain: chain?.name,
-      targetNetwork: targetNetwork.name,
-      isDevnet:
-        chain?.network === "devnet" || targetNetwork.network === "devnet",
-    });
-
-    // 🔍 DIAGNÓSTICO ADICIONAL: Verificar información de la cuenta y posibles problemas
-    console.log("🔍 DIAGNÓSTICO - Información de la cuenta y transacción:", {
-      accountAddress: account?.address,
-      accountClass: account?.constructor?.name,
-      accountProvider: account ? "AccountInterface" : "undefined",
-      walletStatus,
-      isConnected,
-      chainId: chain?.id,
-      targetNetworkId: targetNetwork.id,
-      writeDisabledReason: writeDisabled
-        ? "Wallet en red incorrecta o desconectada"
-        : "Listo para transacción",
-      contractAddress,
-      functionToCall: isDevnet ? "devnet_generate" : "request_randomness_prod",
-      calldataParams: isDevnet
-        ? ["seed"]
-        : ["seed", "callbackFeeLimit", "publishDelay"],
-    });
 
     setIsLoading(true);
     setTxHash("");
@@ -161,20 +125,8 @@ export const RandomnessComponent = ({
         chain?.network === "devnet" ||
         targetNetwork.network === "devnet";
 
-      console.log(
-        "🎯 Modo detectado:",
-        isDevnet ? "DESARROLLO" : "PRODUCCIÓN",
-        forceDevMode ? "(FORZADO)" : "",
-      );
-
       if (isDevnet) {
         // Para desarrollo: usar devnet_generate directamente
-        console.log("🔧 Ejecutando en modo DESARROLLO (devnet_generate)", {
-          contractAddress,
-          seed: seedValue.toString(),
-          account: account?.address,
-          function: "devnet_generate",
-        });
 
         const seedHex = num.toHex(seedValue);
 
@@ -188,9 +140,6 @@ export const RandomnessComponent = ({
 
         if (txHash) {
           setTxHash(txHash);
-          console.log("✅ Generación de desarrollo ejecutada exitosamente", {
-            transactionHash: txHash,
-          });
           notification.success(
             `¡5 números aleatorios generados exitosamente! Hash: ${txHash}`,
           );
@@ -202,15 +151,6 @@ export const RandomnessComponent = ({
         // Para producción: usar protocolo VRF correcto con multicall
         if (useAlternativeMode) {
           // MODO ALTERNATIVO: Usar parámetros más seguros
-          console.log(
-            "🔧 Ejecutando en modo ALTERNATIVO con MULTICALL (parámetros seguros)",
-            {
-              contractAddress,
-              seed: seedValue.toString(),
-              account: account?.address,
-              mode: "alternative_multicall",
-            },
-          );
 
           // Usar parámetros más conservadores
           const safeCallbackFeeLimit = "50000"; // Más bajo que el original 100000
@@ -244,9 +184,6 @@ export const RandomnessComponent = ({
 
           if (multicallTx) {
             setTxHash(multicallTx);
-            console.log("✅ Multicall alternativo ejecutado exitosamente", {
-              transactionHash: multicallTx,
-            });
             notification.success(
               `¡Solicitud VRF enviada (Modo Seguro)! Hash: ${multicallTx}. Esperando respuesta del oráculo...`,
             );
@@ -256,17 +193,6 @@ export const RandomnessComponent = ({
           }
         } else {
           // MODO NORMAL: Multicall estándar
-          console.log(
-            "🏭 Ejecutando en modo PRODUCCIÓN con MULTICALL (estándar)",
-            {
-              contractAddress,
-              seed: seedValue.toString(),
-              callbackFeeLimit,
-              publishDelay,
-              account: account?.address,
-              mode: "standard_multicall",
-            },
-          );
 
           const seedHex = num.toHex(seedValue);
           const callbackFeeLimitHex = num.toHex(BigInt(callbackFeeLimit));
@@ -296,9 +222,6 @@ export const RandomnessComponent = ({
 
           if (multicallTx) {
             setTxHash(multicallTx);
-            console.log("✅ Multicall estándar ejecutado exitosamente", {
-              transactionHash: multicallTx,
-            });
             notification.success(
               `¡Solicitud VRF enviada! Hash: ${multicallTx}. Esperando respuesta del oráculo...`,
             );
@@ -309,30 +232,6 @@ export const RandomnessComponent = ({
         }
       }
     } catch (error: any) {
-      console.error("❌ Error ejecutando solicitud de aleatoriedad:", error);
-
-      // 🔍 DIAGNÓSTICO: Información detallada del error
-      console.error("🔍 DIAGNÓSTICO - Error detallado:", {
-        error: error,
-        message: error.message,
-        code: error.code,
-        data: error.data,
-        stack: error.stack,
-        contractAddress: contractAddress,
-        contractName: contractName,
-        account: account?.address,
-        chain: chain?.name,
-        targetNetwork: targetNetwork.name,
-        writeTransactionResult: error.writeTransactionResult,
-        transactionHash: error.transactionHash,
-        receipt: error.receipt,
-        // Información adicional específica de Argent
-        isArgentError: error.message?.includes("argent"),
-        multicallFailed: error.message?.includes("multicall-failed"),
-        entrypointNotFound: error.message?.includes("ENTRYPOINT_NOT_FOUND"),
-        entrypointFailed: error.message?.includes("ENTRYPOINT_FAILED"),
-      });
-
       // Proporcionar mensajes de error más específicos
       let errorMessage = "Error desconocido al solicitar aleatoriedad";
 
@@ -415,7 +314,7 @@ export const RandomnessComponent = ({
           <div className="mt-2 text-xs text-gray-400">
             <p>
               <strong>Dirección esperada:</strong>{" "}
-              0x31cdafdd0fc1a80d57f3290afff3ba0a62e9d2c628e35c81eb55e05879f0f4f
+              {EXPECTED_RANDOMNESS_CONTRACT_ADDRESS}
             </p>
             <p>
               <strong>Dirección actual:</strong> {contractAddress}
@@ -536,8 +435,11 @@ export const RandomnessComponent = ({
 
           {/* Diagnóstico de problemas potenciales */}
           {contractAddress &&
-            contractAddress !==
-              "0x31cdafdd0fc1a80d57f3290afff3ba0a62e9d2c628e35c81eb55e05879f0f4f" && (
+            contractAddress.toLowerCase().replace(/^0x0+/, "0x") !==
+              EXPECTED_RANDOMNESS_CONTRACT_ADDRESS.toLowerCase().replace(
+                /^0x0+/,
+                "0x",
+              ) && (
               <div className="bg-red-900/20 p-3 rounded-lg border border-red-600">
                 <h4 className="font-semibold text-red-300 mb-2">
                   🚨 Problema Detectado
@@ -547,8 +449,7 @@ export const RandomnessComponent = ({
                     <strong>Dirección del contrato incorrecta:</strong>
                   </p>
                   <p>
-                    • Dirección esperada:
-                    0x31cdafdd0fc1a80d57f3290afff3ba0a62e9d2c628e35c81eb55e05879f0f4f
+                    • Dirección esperada: {EXPECTED_RANDOMNESS_CONTRACT_ADDRESS}
                   </p>
                   <p>• Dirección actual: {contractAddress}</p>
                   <p>
@@ -877,7 +778,6 @@ const VRFCoordinatorConfig = ({
         setIsExpanded(false);
       }
     } catch (error: any) {
-      console.error("Error actualizando VRF coordinator:", error);
       notification.error(
         "Error actualizando VRF coordinator: " +
           (error.message || "Error desconocido"),

@@ -408,8 +408,8 @@ pub mod Randomness {
         while out.len() < 5_usize {
             state_u128 = (state_u128 * a + c) % modulus;
             let state: u64 = state_u128.try_into().unwrap();
-            // candidate in [1,49]
-            let candidate: u8 = (((state % 49_u64) + 1_u64) % 256_u64).try_into().unwrap();
+            // candidate in [1,40] for lottery numbers (1-40 range)
+            let candidate: u8 = (((state % 40_u64) + 1_u64) % 256_u64).try_into().unwrap();
             if !contains_u8(@out, candidate) {
                 out.append(candidate);
             }
