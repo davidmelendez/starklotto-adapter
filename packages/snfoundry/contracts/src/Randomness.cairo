@@ -155,18 +155,18 @@ pub mod Randomness {
                     },
                 );
 
-            // Consumo sincrónico de aleatorio usando Cartridge VRF.
-            // El caller debe prefijar la multicall con `request_random(caller, source)`.
-            // Aquí consumimos con el MISMO `Source`.
+            // Synchronous consumption of randomness using Cartridge VRF.
+            // The caller must prefix the multicall with `request_random(caller, source)`.
+            // Here we consume with the SAME `Source`.
             let vrf_addr = self.vrf_coordinator.read();
             let vrf = IVrfProviderDispatcher { contract_address: vrf_addr };
             let rand_felt: felt252 = vrf.consume_random(Source::Salt(seed.into()));
 
-            // Derivar 5 números en [1,49] a partir del random consumido
+            // Derive 5 numbers in [1,40] from the consumed random
             let base_seed: u64 = felt_to_u64(rand_felt);
             let mut nums = derive_five_unique_numbers(base_seed);
 
-            // persistir números
+            // persist numbers
             let n1 = *nums.at(0);
             let n2 = *nums.at(1);
             let n3 = *nums.at(2);
@@ -387,7 +387,7 @@ pub mod Randomness {
         let maybe_u128: Option<u128> = w0.try_into();
         match maybe_u128 {
             Option::Some(v_u128) => {
-                // 2^64 (usar literal directa; compila en u128)
+                // 2^64 (use direct literal; compiles as u128)
                 let mod64_divisor: u128 = 18446744073709551616_u128;
                 let mod64: u128 = v_u128 % mod64_divisor;
                 let seed_u64: u64 = mod64.try_into().unwrap();

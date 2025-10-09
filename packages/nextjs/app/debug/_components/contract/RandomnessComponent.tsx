@@ -19,7 +19,7 @@ const VRF_PROVIDER_ADDRESS =
 // Dirección esperada del contrato de Randomness desplegado en testnet
 // Esta dirección se actualiza con cada nuevo deployment para pruebas
 const EXPECTED_RANDOMNESS_CONTRACT_ADDRESS =
-  "0x036BcAC633A4B319190Ad7691E2B92DBfFf8EEF098feba82E6a20488824204F7";
+  "0x5b3558ec6cbe58d1d1279b428aaace0fd9230b5993e19f482af82306076c54f";
 
 interface RandomnessComponentProps {
   contractName: ContractName;
@@ -69,12 +69,12 @@ export const RandomnessComponent = ({
   const handleRequestRandomness = async () => {
     if (!isConnected || writeDisabled) {
       notification.error(
-        "Por favor conecta tu wallet y asegúrate de estar en la red correcta",
+        "Please connect your wallet and make sure you are on the correct network",
       );
       return;
     }
 
-    // Verificación adicional de que la dirección es válida antes de proceder
+    // Additional verification that the address is valid before proceeding
     if (
       account?.address &&
       (!account.address.startsWith("0x") ||
@@ -82,31 +82,31 @@ export const RandomnessComponent = ({
         account.address.length > 66)
     ) {
       notification.error(
-        "La dirección de la cuenta tiene un formato inválido. Intenta reconectar tu wallet.",
+        "The account address has an invalid format. Try reconnecting your wallet.",
       );
       return;
     }
 
     if (!account?.address) {
       notification.error(
-        "No se pudo obtener la dirección de la cuenta conectada. Intenta reconectar tu wallet.",
+        "Could not get the connected account address. Try reconnecting your wallet.",
       );
       return;
     }
 
-    // 🚨 VERIFICACIÓN ESPECÍFICA: Detectar cuenta problemática
+    // 🚨 SPECIFIC VERIFICATION: Detect problematic account
     if (
       account?.address ===
       "0x0297fd6c19289a017d50b1b65a07ea4db27596a8fade85c6b9622a3f9a24d2a9"
     ) {
       notification.error(
-        "Se ha detectado una cuenta que puede causar problemas. Intenta reconectar tu wallet o usar una cuenta diferente.",
+        "A problematic account has been detected. Try reconnecting your wallet or use a different account.",
       );
       return;
     }
 
     if (!seed || isNaN(Number(seed))) {
-      notification.error("Por favor ingresa un seed válido (número entero)");
+      notification.error("Please enter a valid seed (integer number)");
       return;
     }
 
@@ -126,7 +126,7 @@ export const RandomnessComponent = ({
         targetNetwork.network === "devnet";
 
       if (isDevnet) {
-        // Para desarrollo: usar devnet_generate directamente
+        // For development: use devnet_generate directly
 
         const seedHex = num.toHex(seedValue);
 
@@ -141,40 +141,40 @@ export const RandomnessComponent = ({
         if (txHash) {
           setTxHash(txHash);
           notification.success(
-            `¡5 números aleatorios generados exitosamente! Hash: ${txHash}`,
+            `5 random numbers generated successfully! Hash: ${txHash}`,
           );
           if (onSuccess) {
             onSuccess(txHash, generationId);
           }
         }
       } else {
-        // Para producción: usar protocolo VRF correcto con multicall
+        // For production: use correct VRF protocol with multicall
         if (useAlternativeMode) {
-          // MODO ALTERNATIVO: Usar parámetros más seguros
+          // ALTERNATIVE MODE: Use safer parameters
 
-          // Usar parámetros más conservadores
-          const safeCallbackFeeLimit = "50000"; // Más bajo que el original 100000
+          // Use more conservative parameters
+          const safeCallbackFeeLimit = "50000"; // Lower than the original 100000
           const safePublishDelay = "0";
 
           const seedHex = num.toHex(seedValue);
           const callbackFeeLimitHex = num.toHex(BigInt(safeCallbackFeeLimit));
           const publishDelayHex = num.toHex(BigInt(safePublishDelay));
 
-          // Crear el source para el VRF usando el seed
+          // Create the source for VRF using the seed
           const sourceValue = seedValue;
 
-          // MULTICALL: Dos transacciones según protocolo VRF correcto
+          // MULTICALL: Two transactions according to correct VRF protocol
           const multicallTx = await writeTransaction([
-            // Paso 1: Solicitar aleatoriedad al VRF provider
+            // Step 1: Request randomness from VRF provider
             {
               contractAddress: VRF_PROVIDER_ADDRESS,
               entrypoint: "request_random",
               calldata: [
-                contractAddress as string, // caller (nuestro contrato)
-                num.toHex(sourceValue), // source (el seed)
+                contractAddress as string, // caller (our contract)
+                num.toHex(sourceValue), // source (the seed)
               ],
             },
-            // Paso 2: Consumir aleatoriedad en nuestro contrato
+            // Step 2: Consume randomness in our contract
             {
               contractAddress: contractAddress as string,
               entrypoint: "request_randomness_prod",
@@ -185,34 +185,34 @@ export const RandomnessComponent = ({
           if (multicallTx) {
             setTxHash(multicallTx);
             notification.success(
-              `¡Solicitud VRF enviada (Modo Seguro)! Hash: ${multicallTx}. Esperando respuesta del oráculo...`,
+              `VRF request sent (Safe Mode)! Hash: ${multicallTx}. Waiting for oracle response...`,
             );
             if (onSuccess) {
               onSuccess(multicallTx, generationId);
             }
           }
         } else {
-          // MODO NORMAL: Multicall estándar
+          // NORMAL MODE: Standard Multicall
 
           const seedHex = num.toHex(seedValue);
           const callbackFeeLimitHex = num.toHex(BigInt(callbackFeeLimit));
           const publishDelayHex = num.toHex(BigInt(publishDelay));
 
-          // Crear el source para el VRF usando el seed
+          // Create the source for VRF using the seed
           const sourceValue = seedValue;
 
-          // MULTICALL: Dos transacciones según protocolo VRF correcto
+          // MULTICALL: Two transactions according to correct VRF protocol
           const multicallTx = await writeTransaction([
-            // Paso 1: Solicitar aleatoriedad al VRF provider
+            // Step 1: Request randomness from VRF provider
             {
               contractAddress: VRF_PROVIDER_ADDRESS,
               entrypoint: "request_random",
               calldata: [
-                contractAddress as string, // caller (nuestro contrato)
-                num.toHex(sourceValue), // source (el seed)
+                contractAddress as string, // caller (our contract)
+                num.toHex(sourceValue), // source (the seed)
               ],
             },
-            // Paso 2: Consumir aleatoriedad en nuestro contrato
+            // Step 2: Consume randomness in our contract
             {
               contractAddress: contractAddress as string,
               entrypoint: "request_randomness_prod",
@@ -223,7 +223,7 @@ export const RandomnessComponent = ({
           if (multicallTx) {
             setTxHash(multicallTx);
             notification.success(
-              `¡Solicitud VRF enviada! Hash: ${multicallTx}. Esperando respuesta del oráculo...`,
+              `VRF request sent! Hash: ${multicallTx}. Waiting for oracle response...`,
             );
             if (onSuccess) {
               onSuccess(multicallTx, generationId);
@@ -232,40 +232,40 @@ export const RandomnessComponent = ({
         }
       }
     } catch (error: any) {
-      // Proporcionar mensajes de error más específicos
-      let errorMessage = "Error desconocido al solicitar aleatoriedad";
+      // Provide more specific error messages
+      let errorMessage = "Unknown error requesting randomness";
 
       if (
         error.name === "UserRejectedRequestError" ||
         error.message?.includes("User rejected request")
       ) {
         errorMessage =
-          "Transacción cancelada por el usuario. Por favor, inténtalo de nuevo.";
+          "Transaction canceled by user. Please try again.";
       } else if (error.message?.includes("insufficient")) {
         errorMessage =
-          "Fondos insuficientes para cubrir los fees de la transacción";
+          "Insufficient funds to cover transaction fees";
       } else if (error.message?.includes("nonce")) {
-        errorMessage = "Error de nonce. Intenta nuevamente";
+        errorMessage = "Nonce error. Please try again";
       } else if (error.message?.includes("network")) {
-        errorMessage = "Error de red. Verifica tu conexión";
+        errorMessage = "Network error. Check your connection";
       } else if (error.message?.includes("ENTRYPOINT_NOT_FOUND")) {
-        errorMessage = `❌ ENTRYPOINT_NOT_FOUND: La función no existe en el contrato desplegado.
-        Dirección del contrato: ${contractAddress}
-        Función intentada: ${chain?.network === "devnet" || targetNetwork.network === "devnet" ? "devnet_generate" : "request_randomness_prod"}
-        Posible solución: El contrato necesita ser recompilado y redeployado.`;
+        errorMessage = `❌ ENTRYPOINT_NOT_FOUND: Function does not exist in deployed contract.
+        Contract address: ${contractAddress}
+        Attempted function: ${chain?.network === "devnet" || targetNetwork.network === "devnet" ? "devnet_generate" : "request_randomness_prod"}
+        Possible solution: Contract needs to be recompiled and redeployed.`;
       } else if (error.message?.includes("ENTRYPOINT_FAILED")) {
-        errorMessage = `❌ ENTRYPOINT_FAILED: Error ejecutando la función del contrato.
-        Dirección del contrato: ${contractAddress}
-        Función: ${chain?.network === "devnet" || targetNetwork.network === "devnet" ? "devnet_generate" : "request_randomness_prod"}
-        Posible solución: Verifica que el contrato esté correctamente inicializado.`;
+        errorMessage = `❌ ENTRYPOINT_FAILED: Error executing contract function.
+        Contract address: ${contractAddress}
+        Function: ${chain?.network === "devnet" || targetNetwork.network === "devnet" ? "devnet_generate" : "request_randomness_prod"}
+        Possible solution: Verify that the contract is correctly initialized.`;
       } else if (error.message?.includes("argent/multicall-failed")) {
-        errorMessage = `❌ ARGENT_MULTICALL_FAILED: Error en multicall VRF.
-        Transacciones ejecutadas:
+        errorMessage = `❌ ARGENT_MULTICALL_FAILED: Error in VRF multicall.
+        Executed transactions:
         1. request_random → VRF Provider (${VRF_PROVIDER_ADDRESS})
-        2. request_randomness_prod → Contrato (${contractAddress})
-        Posible solución: Verifica que el VRF coordinator esté configurado correctamente.`;
+        2. request_randomness_prod → Contract (${contractAddress})
+        Possible solution: Verify that the VRF coordinator is correctly configured.`;
       } else if (error.message) {
-        errorMessage = `❌ Error específico: ${error.message}`;
+        errorMessage = `❌ Specific error: ${error.message}`;
       }
 
       notification.error(errorMessage);
@@ -274,12 +274,12 @@ export const RandomnessComponent = ({
     }
   };
 
-  // Verificar que tenemos toda la información necesaria
+  // Verify that we have all necessary information
   if (!contractAddress || !account?.address) {
     return (
       <div className="space-y-6 p-6 bg-component border border-[#8A45FC] rounded-[5px]">
         <div className="text-center text-gray-400">
-          <p>Cargando información del contrato...</p>
+          <p>Loading contract information...</p>
         </div>
       </div>
     );
@@ -289,91 +289,91 @@ export const RandomnessComponent = ({
     <div className="space-y-6 p-6 bg-component border border-[#8A45FC] rounded-[5px]">
       <div className="space-y-4">
         <h3 className="text-xl font-bold text-white">
-          🏆 Multicall VRF - Solicitar Aleatoriedad con Cartridge
+          🏆 Multicall VRF - Request Randomness with Cartridge
         </h3>
 
         <p className="text-sm text-gray-300">
           {isDevnet ? (
             <>
-              Esta función genera 5 números aleatorios únicos en el rango [1,49]
-              usando generación local para desarrollo.
+              This function generates 5 unique random numbers in the range [1,40]
+              using local generation for development.
             </>
           ) : (
             <>
-              Esta función ejecuta un multicall que primero solicita
-              aleatoriedad al VRF provider de Cartridge, luego consume esa
-              aleatoriedad para generar 5 números únicos en el rango [1,49].
+              This function executes a multicall that first requests
+              randomness from the Cartridge VRF provider, then consumes that
+              randomness to generate 5 unique numbers in the range [1,40].
             </>
           )}
         </p>
 
-        {/* Información del contrato */}
+        {/* Contract information */}
         <div className="bg-base-100 p-4 rounded-lg">
-          <h4 className="font-semibold mb-2">Contrato Consumidor:</h4>
+          <h4 className="font-semibold mb-2">Consumer Contract:</h4>
           <Address address={contractAddress} />
           <div className="mt-2 text-xs text-gray-400">
             <p>
-              <strong>Dirección esperada:</strong>{" "}
+              <strong>Expected address:</strong>{" "}
               {EXPECTED_RANDOMNESS_CONTRACT_ADDRESS}
             </p>
             <p>
-              <strong>Dirección actual:</strong> {contractAddress}
+              <strong>Current address:</strong> {contractAddress}
             </p>
             <p>
-              <strong>Red:</strong> {chain?.name || "Desconocida"} →{" "}
+              <strong>Network:</strong> {chain?.name || "Unknown"} →{" "}
               {targetNetwork.name}
             </p>
             <p>
-              <strong>Modo:</strong>{" "}
+              <strong>Mode:</strong>{" "}
               {isDevnet
-                ? "Desarrollo (devnet)"
-                : "Producción (testnet/sepolia)"}
+                ? "Development (devnet)"
+                : "Production (testnet/sepolia)"}
             </p>
           </div>
         </div>
 
-        {/* Información técnica */}
+        {/* Technical information */}
         <div
           className={`${isDevnet ? "bg-blue-900/20 border-blue-600" : forceDevMode ? "bg-yellow-900/20 border-yellow-600" : "bg-purple-900/20 border-purple-600"} p-4 rounded-lg`}
         >
           <h4
             className={`font-semibold mb-2 ${isDevnet ? "text-blue-300" : forceDevMode ? "text-yellow-300" : "text-purple-300"}`}
           >
-            📋 Modo:{" "}
+            📋 Mode:{" "}
             {isDevnet
               ? forceDevMode
-                ? "Desarrollo Forzado (devnet_generate)"
-                : "Desarrollo (Local)"
+                ? "Forced Development (devnet_generate)"
+                : "Development (Local)"
               : useAlternativeMode
-                ? "Producción (Multicall Seguro)"
-                : "Producción (Multicall Estándar)"}
+                ? "Production (Safe Multicall)"
+                : "Production (Standard Multicall)"}
           </h4>
           <div className="space-y-1 text-sm">
             {isDevnet ? (
               <>
                 <p>
-                  <strong>Método:</strong> devnet_generate (generación local)
+                  <strong>Method:</strong> devnet_generate (local generation)
                 </p>
                 <p>
-                  <strong>Contrato:</strong> {contractAddress}
+                  <strong>Contract:</strong> {contractAddress}
                 </p>
                 <p>
-                  <strong>Estado:</strong>{" "}
-                  {forceDevMode ? "Forzado para testing" : "Automático"}
+                  <strong>Status:</strong>{" "}
+                  {forceDevMode ? "Forced for testing" : "Automatic"}
                 </p>
               </>
             ) : (
               <>
                 <p>
-                  <strong>Método:</strong> Multicall VRF (
-                  {useAlternativeMode ? "Modo Seguro" : "Estándar"})
+                  <strong>Method:</strong> Multicall VRF (
+                  {useAlternativeMode ? "Safe Mode" : "Standard"})
                 </p>
                 <p>
-                  <strong>Transacción 1:</strong> request_random → VRF Provider
+                  <strong>Transaction 1:</strong> request_random → VRF Provider
                 </p>
                 <p>
-                  <strong>Transacción 2:</strong> request_randomness_prod →
-                  Contrato
+                  <strong>Transaction 2:</strong> request_randomness_prod →
+                  Contract
                 </p>
                 <p>
                   <strong>VRF Provider:</strong> {VRF_PROVIDER_ADDRESS}
@@ -383,21 +383,21 @@ export const RandomnessComponent = ({
                   {useAlternativeMode ? "50,000" : callbackFeeLimit} wei
                 </p>
                 <p>
-                  <strong>Publish Delay:</strong> {publishDelay} (sin delay)
+                  <strong>Publish Delay:</strong> {publishDelay} (no delay)
                 </p>
                 <p>
-                  <strong>Source (Seed):</strong> Usado como source para VRF
+                  <strong>Source (Seed):</strong> Used as source for VRF
                 </p>
               </>
             )}
           </div>
         </div>
 
-        {/* Formulario de entrada */}
+        {/* Input form */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">
-              Seed (número entero):
+              Seed (integer number):
             </label>
             <input
               type="number"
@@ -408,32 +408,32 @@ export const RandomnessComponent = ({
               disabled={isLoading}
             />
             <p className="text-xs text-gray-400 mt-1">
-              El seed determina la secuencia aleatoria. Usa diferentes valores
-              para obtener resultados diferentes.
+              The seed determines the random sequence. Use different values
+              to get different results.
             </p>
           </div>
 
-          {/* Estado de conexión */}
+          {/* Connection status */}
           {!isConnected && (
             <div className="bg-red-900/20 p-3 rounded-lg border border-red-600">
               <p className="text-red-300 text-sm">
-                ⚠️ Wallet no conectado. Conecta tu wallet para usar esta
-                función.
+                ⚠️ Wallet not connected. Connect your wallet to use this
+                function.
               </p>
             </div>
           )}
 
-          {/* Estado de red */}
+          {/* Network status */}
           {isConnected && writeDisabled && (
             <div className="bg-yellow-900/20 p-3 rounded-lg border border-yellow-600">
               <p className="text-yellow-300 text-sm">
-                ⚠️ Wallet conectado a red incorrecta. Cambia a{" "}
+                ⚠️ Wallet connected to wrong network. Switch to{" "}
                 {targetNetwork.name}.
               </p>
             </div>
           )}
 
-          {/* Diagnóstico de problemas potenciales */}
+          {/* Potential problems diagnosis */}
           {contractAddress &&
             contractAddress.toLowerCase().replace(/^0x0+/, "0x") !==
               EXPECTED_RANDOMNESS_CONTRACT_ADDRESS.toLowerCase().replace(
@@ -442,61 +442,60 @@ export const RandomnessComponent = ({
               ) && (
               <div className="bg-red-900/20 p-3 rounded-lg border border-red-600">
                 <h4 className="font-semibold text-red-300 mb-2">
-                  🚨 Problema Detectado
+                  🚨 Problem Detected
                 </h4>
                 <div className="text-sm space-y-1 text-red-200">
                   <p>
-                    <strong>Dirección del contrato incorrecta:</strong>
+                    <strong>Incorrect contract address:</strong>
                   </p>
                   <p>
-                    • Dirección esperada: {EXPECTED_RANDOMNESS_CONTRACT_ADDRESS}
+                    • Expected address: {EXPECTED_RANDOMNESS_CONTRACT_ADDRESS}
                   </p>
-                  <p>• Dirección actual: {contractAddress}</p>
+                  <p>• Current address: {contractAddress}</p>
                   <p>
-                    • <strong>Solución:</strong> El contrato necesita ser
-                    recompilado y redeployado con la dirección correcta.
+                    • <strong>Solution:</strong> The contract needs to be
+                    recompiled and redeployed with the correct address.
                   </p>
                 </div>
               </div>
             )}
 
-          {/* Diagnóstico específico de problemas de cuenta/wallet */}
+          {/* Specific account/wallet problem diagnosis */}
           {account?.address &&
             account.address.startsWith(
               "0x0297fd6c19289a017d50b1b65a07ea4db27596a8fade85c6b9622a3f9a24d2a9",
             ) && (
               <div className="bg-red-900/20 p-3 rounded-lg border border-red-600">
                 <h4 className="font-semibold text-red-300 mb-2">
-                  🚨 Cuenta Problemática Detectada
+                  🚨 Problematic Account Detected
                 </h4>
                 <div className="text-sm space-y-2 text-red-200">
                   <p>
                     <strong>
-                      Se ha detectado una cuenta que causa errores de
-                      transacción.
+                      An account that causes transaction errors has been detected.
                     </strong>
                   </p>
                   <div className="bg-red-800/30 p-2 rounded text-xs">
                     <p>
-                      <strong>Dirección problemática:</strong>
+                      <strong>Problematic address:</strong>
                     </p>
                     <p className="font-mono break-all">{account.address}</p>
                   </div>
 
                   <div className="space-y-2">
                     <p className="font-semibold">
-                      🔧 Opciones para solucionar:
+                      🔧 Options to fix:
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                       <button
                         className="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white"
                         onClick={() => {
-                          // Forzar desconexión y reconexión
+                          // Force disconnect and reconnect
                           window.location.reload();
                         }}
                       >
-                        🔄 Reconectar Wallet
+                        🔄 Reconnect Wallet
                       </button>
 
                       <button
@@ -505,27 +504,27 @@ export const RandomnessComponent = ({
                           setUseAlternativeMode(true);
                           setSeed("12345");
                           notification.info(
-                            "Modo Seguro activado. Intenta generar números con parámetros más conservadores.",
+                            "Safe Mode activated. Try generating numbers with more conservative parameters.",
                           );
                         }}
                       >
-                        🛡️ Modo Seguro
+                        🛡️ Safe Mode
                       </button>
 
                       <button
                         className="btn btn-sm bg-purple-600 hover:bg-purple-700 text-white"
                         onClick={() => {
-                          // Generar semilla completamente diferente
+                          // Generate completely different seed
                           const newSeed = Math.floor(
                             Math.random() * 1000000,
                           ).toString();
                           setSeed(newSeed);
                           notification.info(
-                            `Nueva semilla generada: ${newSeed}. Intenta generar números con esta semilla diferente.`,
+                            `New seed generated: ${newSeed}. Try generating numbers with this different seed.`,
                           );
                         }}
                       >
-                        🎲 Nueva Semilla
+                        🎲 New Seed
                       </button>
 
                       <button
@@ -535,24 +534,24 @@ export const RandomnessComponent = ({
                           setUseAlternativeMode(false);
                           notification.info(
                             forceDevMode
-                              ? "Modo desarrollo desactivado."
-                              : "Modo desarrollo forzado activado.",
+                              ? "Development mode deactivated."
+                              : "Forced development mode activated.",
                           );
                         }}
                       >
-                        🔧 {forceDevMode ? "Desactivar" : "Forzar"} Dev Mode
+                        🔧 {forceDevMode ? "Deactivate" : "Force"} Dev Mode
                       </button>
                     </div>
 
                     <details className="text-xs">
                       <summary className="cursor-pointer text-red-300 hover:text-red-200">
-                        Más opciones avanzadas
+                        More advanced options
                       </summary>
                       <div className="mt-2 space-y-1 text-red-300">
-                        <p>• Usa una cuenta diferente en tu wallet</p>
-                        <p>• Verifica que tienes ETH suficiente para fees</p>
-                        <p>• Asegúrate de que la cuenta esté activa</p>
-                        <p>• Contacta soporte si el problema persiste</p>
+                        <p>• Use a different account in your wallet</p>
+                        <p>• Verify that you have enough ETH for fees</p>
+                        <p>• Make sure the account is active</p>
+                        <p>• Contact support if the problem persists</p>
                       </div>
                     </details>
                   </div>
@@ -560,102 +559,102 @@ export const RandomnessComponent = ({
               </div>
             )}
 
-          {/* Información sobre Modo Seguro cuando está activo */}
+          {/* Information about Safe Mode when active */}
           {useAlternativeMode && (
             <div className="bg-green-900/20 p-3 rounded-lg border border-green-600">
               <h4 className="font-semibold text-green-300 mb-2">
-                ✅ Modo Seguro Activo
+                ✅ Safe Mode Active
               </h4>
               <div className="text-sm space-y-1 text-green-200">
-                <p>• Usando parámetros más conservadores (fee limit: 50,000)</p>
+                <p>• Using more conservative parameters (fee limit: 50,000)</p>
                 <p>
-                  • Probabilidad más alta de éxito con cuentas problemáticas
+                  • Higher probability of success with problematic accounts
                 </p>
-                <p>• Puedes generar números usando el botón principal</p>
+                <p>• You can generate numbers using the main button</p>
                 <button
                   className="btn btn-xs bg-red-600 hover:bg-red-700 text-white mt-2"
                   onClick={() => {
                     setUseAlternativeMode(false);
                     notification.info(
-                      "Modo Seguro desactivado. Usando parámetros normales.",
+                      "Safe Mode deactivated. Using normal parameters.",
                     );
                   }}
                 >
-                  ❌ Desactivar Modo Seguro
+                  ❌ Deactivate Safe Mode
                 </button>
               </div>
             </div>
           )}
 
-          {/* Información sobre Modo Desarrollo Forzado cuando está activo */}
+          {/* Information about Forced Development Mode when active */}
           {forceDevMode && (
             <div className="bg-yellow-900/20 p-3 rounded-lg border border-yellow-600">
               <h4 className="font-semibold text-yellow-300 mb-2">
-                ⚠️ Modo Desarrollo Forzado
+                ⚠️ Forced Development Mode
               </h4>
               <div className="text-sm space-y-1 text-yellow-200">
                 <p>
-                  • Usando función de desarrollo (devnet_generate) incluso en
+                  • Using development function (devnet_generate) even on
                   testnet
                 </p>
-                <p>• Generación local sin depender de oráculos externos</p>
-                <p>• Útil para testing cuando hay problemas con VRF</p>
+                <p>• Local generation without depending on external oracles</p>
+                <p>• Useful for testing when there are VRF problems</p>
                 <button
                   className="btn btn-xs bg-red-600 hover:bg-red-700 text-white mt-2"
                   onClick={() => {
                     setForceDevMode(false);
                     notification.info(
-                      "Modo desarrollo desactivado. Usando modo producción.",
+                      "Development mode deactivated. Using production mode.",
                     );
                   }}
                 >
-                  ❌ Desactivar Modo Dev
+                  ❌ Deactivate Dev Mode
                 </button>
               </div>
             </div>
           )}
 
-          {/* Estado de cuenta (debugging avanzado) */}
+          {/* Account status (advanced debugging) */}
           {isConnected && !writeDisabled && !account?.address && (
             <div className="bg-orange-900/20 p-3 rounded-lg border border-orange-600">
               <p className="text-orange-300 text-sm font-semibold mb-2">
-                🔍 Estado de cuenta (debugging):
+                🔍 Account status (debugging):
               </p>
               <div className="text-xs space-y-1">
                 <p>
-                  <strong>Wallet conectado:</strong> {isConnected ? "Sí" : "No"}
+                  <strong>Wallet connected:</strong> {isConnected ? "Yes" : "No"}
                 </p>
                 <p>
-                  <strong>Dirección de cuenta:</strong>{" "}
-                  {account?.address || "No disponible"}
+                  <strong>Account address:</strong>{" "}
+                  {account?.address || "Not available"}
                 </p>
                 <p>
-                  <strong>Estado de wallet:</strong> {walletStatus}
+                  <strong>Wallet status:</strong> {walletStatus}
                 </p>
                 <p>
-                  <strong>Red actual:</strong> {chain?.name || "Desconocida"}
+                  <strong>Current network:</strong> {chain?.name || "Unknown"}
                 </p>
                 <p>
-                  <strong>Red objetivo:</strong> {targetNetwork.name}
+                  <strong>Target network:</strong> {targetNetwork.name}
                 </p>
               </div>
               <p className="text-orange-300 text-xs mt-2">
-                💡 Si ves esto, intenta reconectar tu wallet o refrescar la
-                página.
+                💡 If you see this, try reconnecting your wallet or refreshing the
+                page.
               </p>
             </div>
           )}
 
-          {/* Resultado de transacción */}
+          {/* Transaction result */}
           {txHash && (
             <div className="bg-green-900/20 p-3 rounded-lg border border-green-600">
               <p className="text-green-300 text-sm break-words">
-                Hash de transacción: {txHash}
+                Transaction hash: {txHash}
               </p>
             </div>
           )}
 
-          {/* Botón principal */}
+          {/* Main button */}
           <button
             className={`btn w-full ${
               isLoading || !isConnected || writeDisabled
@@ -669,66 +668,66 @@ export const RandomnessComponent = ({
               <span className="loading loading-spinner loading-sm mr-2"></span>
             )}
             {isDevnet
-              ? "🎲 Generar 5 Números (Desarrollo)"
+              ? "🎲 Generate 5 Numbers (Development)"
               : useAlternativeMode
-                ? "🔒 Multicall VRF (Modo Seguro)"
-                : "🔮 Multicall VRF (Estándar)"}
+                ? "🔒 Multicall VRF (Safe Mode)"
+                : "🔮 Multicall VRF (Standard)"}
           </button>
         </div>
 
-        {/* Configuración del VRF Coordinator (solo producción) */}
+        {/* VRF Coordinator Configuration (production only) */}
         {!isDevnet && (
           <VRFCoordinatorConfig contractAddress={contractAddress} />
         )}
 
-        {/* Información adicional */}
+        {/* Additional information */}
         <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600">
           <h4 className="font-semibold mb-2 text-blue-300">
-            💡 Cómo funciona:
+            💡 How it works:
           </h4>
           {isDevnet ? (
             <ol className="text-sm space-y-1 text-gray-300">
               <li>
-                1. Se llama directamente a <code>devnet_generate(seed)</code>
+                1. Directly calls <code>devnet_generate(seed)</code>
               </li>
               <li>
-                2. El contrato genera 5 números únicos usando un algoritmo LCG
-                local
+                2. The contract generates 5 unique numbers using a local LCG
+                algorithm
               </li>
               <li>
-                3. Los números se generan inmediatamente sin depender de
-                oráculos externos
+                3. Numbers are generated immediately without depending on
+                external oracles
               </li>
               <li>
-                4. Los números se almacenan y se pueden consultar con{" "}
+                4. Numbers are stored and can be queried with{" "}
                 <code>get_generation_numbers(id)</code>
               </li>
             </ol>
           ) : (
             <ol className="text-sm space-y-1 text-gray-300">
               <li>
-                1. <strong>Paso 1:</strong> Se ejecuta multicall con 2
-                transacciones
+                1. <strong>Step 1:</strong> Executes multicall with 2
+                transactions
               </li>
               <li>
-                2. <strong>Transacción 1:</strong>{" "}
+                2. <strong>Transaction 1:</strong>{" "}
                 <code>request_random(caller, source)</code> → VRF Provider
               </li>
               <li>
-                3. <strong>Transacción 2:</strong>{" "}
+                3. <strong>Transaction 2:</strong>{" "}
                 <code>request_randomness_prod(seed, fee, delay)</code> →
-                Contrato
+                Contract
               </li>
               <li>
-                4. El contrato solicita y consume aleatoriedad usando protocolo
-                VRF de Cartridge
+                4. The contract requests and consumes randomness using Cartridge
+                VRF protocol
               </li>
               <li>
-                5. Los números se generan usando aleatoriedad descentralizada
-                verificable
+                5. Numbers are generated using verifiable decentralized
+                randomness
               </li>
               <li>
-                6. Los números se almacenan y se pueden consultar con{" "}
+                6. Numbers are stored and can be queried with{" "}
                 <code>get_generation_numbers(id)</code>
               </li>
             </ol>
@@ -739,7 +738,7 @@ export const RandomnessComponent = ({
   );
 };
 
-// Componente para configurar el VRF Coordinator
+// Component to configure VRF Coordinator
 const VRFCoordinatorConfig = ({
   contractAddress,
 }: VRFCoordinatorConfigProps) => {
@@ -756,7 +755,7 @@ const VRFCoordinatorConfig = ({
       !newCoordinatorAddress.startsWith("0x") ||
       newCoordinatorAddress.length !== 66
     ) {
-      notification.error("Dirección del VRF coordinator inválida");
+      notification.error("Invalid VRF coordinator address");
       return;
     }
 
@@ -773,14 +772,14 @@ const VRFCoordinatorConfig = ({
 
       if (txHash) {
         notification.success(
-          `VRF coordinator actualizado exitosamente! Hash: ${txHash}`,
+          `VRF coordinator updated successfully! Hash: ${txHash}`,
         );
         setIsExpanded(false);
       }
     } catch (error: any) {
       notification.error(
-        "Error actualizando VRF coordinator: " +
-          (error.message || "Error desconocido"),
+        "Error updating VRF coordinator: " +
+          (error.message || "Unknown error"),
       );
     } finally {
       setIsLoading(false);
@@ -790,26 +789,26 @@ const VRFCoordinatorConfig = ({
   return (
     <div className="bg-orange-900/20 p-4 rounded-lg border border-orange-600">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold text-orange-300">⚙️ Configuración VRF</h4>
+        <h4 className="font-semibold text-orange-300">⚙️ VRF Configuration</h4>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-orange-300 hover:text-orange-200 text-sm"
         >
-          {isExpanded ? "▼" : "▶"} {isExpanded ? "Ocultar" : "Mostrar"}
+          {isExpanded ? "▼" : "▶"} {isExpanded ? "Hide" : "Show"}
         </button>
       </div>
 
       {isExpanded && (
         <div className="space-y-3">
           <p className="text-sm text-gray-300">
-            El contrato debe estar configurado con la dirección correcta del VRF
-            coordinator de Cartridge.
+            The contract must be configured with the correct VRF
+            coordinator address from Cartridge.
           </p>
 
           <div className="space-y-2">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-300">
-                Nueva dirección del VRF Coordinator:
+                New VRF Coordinator address:
               </label>
               <input
                 type="text"
@@ -823,17 +822,17 @@ const VRFCoordinatorConfig = ({
 
             <div className="text-xs text-gray-400 space-y-1">
               <p>
-                <strong>Dirección actual configurada:</strong>{" "}
+                <strong>Current configured address:</strong>{" "}
                 {VRF_PROVIDER_ADDRESS}
               </p>
               <p>
-                <strong>Dirección en formulario:</strong>{" "}
+                <strong>Address in form:</strong>{" "}
                 {newCoordinatorAddress}
               </p>
               <p>
                 <em>
-                  Nota: Solo el owner del contrato puede cambiar esta
-                  configuración.
+                  Note: Only the contract owner can change this
+                  configuration.
                 </em>
               </p>
             </div>
@@ -852,26 +851,26 @@ const VRFCoordinatorConfig = ({
               {isLoading && (
                 <span className="loading loading-spinner loading-xs mr-2"></span>
               )}
-              Actualizar VRF Coordinator
+              Update VRF Coordinator
             </button>
           </div>
 
           <details className="text-sm">
             <summary className="cursor-pointer text-orange-300 hover:text-orange-200">
-              Información técnica
+              Technical information
             </summary>
             <div className="mt-2 space-y-1 text-gray-400 text-xs">
               <p>
-                • Esta función llama a <code>set_vrf_coordinator()</code> en el
-                contrato
+                • This function calls <code>set_vrf_coordinator()</code> on the
+                contract
               </p>
-              <p>• Solo el owner del contrato puede ejecutar esta función</p>
+              <p>• Only the contract owner can execute this function</p>
               <p>
-                • El contrato usará esta dirección para validar callbacks del
-                VRF
+                • The contract will use this address to validate VRF
+                callbacks
               </p>
               <p>
-                • Asegúrate de usar la dirección correcta del VRF provider de
+                • Make sure to use the correct VRF provider address from
                 Cartridge
               </p>
             </div>
