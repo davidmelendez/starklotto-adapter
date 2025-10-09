@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     Randomness: {
       address:
-        "0x36bcac633a4b319190ad7691e2b92dbfff8eef098feba82e6a20488824204f7",
+        "0x5b3558ec6cbe58d1d1279b428aaace0fd9230b5993e19f482af82306076c54f",
       abi: [
         {
           type: "impl",
@@ -478,7 +478,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x17d717a5813f50ee62b9f786ab6d14977ba6c25464c6d55cb3f1429686c123",
+        "0x1a5be748810b5e77913c3ec2d68967a24cb0390bc0bdb4fda03742ab7cf8b77",
     },
   },
   sepolia: {

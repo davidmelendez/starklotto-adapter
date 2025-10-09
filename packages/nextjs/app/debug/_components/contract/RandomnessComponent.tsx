@@ -110,7 +110,6 @@ export const RandomnessComponent = ({
       return;
     }
 
-
     setIsLoading(true);
     setTxHash("");
     setGenerationId("");
@@ -239,11 +238,9 @@ export const RandomnessComponent = ({
         error.name === "UserRejectedRequestError" ||
         error.message?.includes("User rejected request")
       ) {
-        errorMessage =
-          "Transaction canceled by user. Please try again.";
+        errorMessage = "Transaction canceled by user. Please try again.";
       } else if (error.message?.includes("insufficient")) {
-        errorMessage =
-          "Insufficient funds to cover transaction fees";
+        errorMessage = "Insufficient funds to cover transaction fees";
       } else if (error.message?.includes("nonce")) {
         errorMessage = "Nonce error. Please try again";
       } else if (error.message?.includes("network")) {
@@ -295,14 +292,14 @@ export const RandomnessComponent = ({
         <p className="text-sm text-gray-300">
           {isDevnet ? (
             <>
-              This function generates 5 unique random numbers in the range [1,40]
-              using local generation for development.
+              This function generates 5 unique random numbers in the range
+              [1,40] using local generation for development.
             </>
           ) : (
             <>
-              This function executes a multicall that first requests
-              randomness from the Cartridge VRF provider, then consumes that
-              randomness to generate 5 unique numbers in the range [1,40].
+              This function executes a multicall that first requests randomness
+              from the Cartridge VRF provider, then consumes that randomness to
+              generate 5 unique numbers in the range [1,40].
             </>
           )}
         </p>
@@ -408,8 +405,8 @@ export const RandomnessComponent = ({
               disabled={isLoading}
             />
             <p className="text-xs text-gray-400 mt-1">
-              The seed determines the random sequence. Use different values
-              to get different results.
+              The seed determines the random sequence. Use different values to
+              get different results.
             </p>
           </div>
 
@@ -472,7 +469,8 @@ export const RandomnessComponent = ({
                 <div className="text-sm space-y-2 text-red-200">
                   <p>
                     <strong>
-                      An account that causes transaction errors has been detected.
+                      An account that causes transaction errors has been
+                      detected.
                     </strong>
                   </p>
                   <div className="bg-red-800/30 p-2 rounded text-xs">
@@ -483,9 +481,7 @@ export const RandomnessComponent = ({
                   </div>
 
                   <div className="space-y-2">
-                    <p className="font-semibold">
-                      🔧 Options to fix:
-                    </p>
+                    <p className="font-semibold">🔧 Options to fix:</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                       <button
@@ -567,9 +563,7 @@ export const RandomnessComponent = ({
               </h4>
               <div className="text-sm space-y-1 text-green-200">
                 <p>• Using more conservative parameters (fee limit: 50,000)</p>
-                <p>
-                  • Higher probability of success with problematic accounts
-                </p>
+                <p>• Higher probability of success with problematic accounts</p>
                 <p>• You can generate numbers using the main button</p>
                 <button
                   className="btn btn-xs bg-red-600 hover:bg-red-700 text-white mt-2"
@@ -594,8 +588,7 @@ export const RandomnessComponent = ({
               </h4>
               <div className="text-sm space-y-1 text-yellow-200">
                 <p>
-                  • Using development function (devnet_generate) even on
-                  testnet
+                  • Using development function (devnet_generate) even on testnet
                 </p>
                 <p>• Local generation without depending on external oracles</p>
                 <p>• Useful for testing when there are VRF problems</p>
@@ -622,7 +615,8 @@ export const RandomnessComponent = ({
               </p>
               <div className="text-xs space-y-1">
                 <p>
-                  <strong>Wallet connected:</strong> {isConnected ? "Yes" : "No"}
+                  <strong>Wallet connected:</strong>{" "}
+                  {isConnected ? "Yes" : "No"}
                 </p>
                 <p>
                   <strong>Account address:</strong>{" "}
@@ -639,8 +633,8 @@ export const RandomnessComponent = ({
                 </p>
               </div>
               <p className="text-orange-300 text-xs mt-2">
-                💡 If you see this, try reconnecting your wallet or refreshing the
-                page.
+                💡 If you see this, try reconnecting your wallet or refreshing
+                the page.
               </p>
             </div>
           )}
@@ -682,9 +676,7 @@ export const RandomnessComponent = ({
 
         {/* Additional information */}
         <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600">
-          <h4 className="font-semibold mb-2 text-blue-300">
-            💡 How it works:
-          </h4>
+          <h4 className="font-semibold mb-2 text-blue-300">💡 How it works:</h4>
           {isDevnet ? (
             <ol className="text-sm space-y-1 text-gray-300">
               <li>
@@ -778,8 +770,7 @@ const VRFCoordinatorConfig = ({
       }
     } catch (error: any) {
       notification.error(
-        "Error updating VRF coordinator: " +
-          (error.message || "Unknown error"),
+        "Error updating VRF coordinator: " + (error.message || "Unknown error"),
       );
     } finally {
       setIsLoading(false);
@@ -801,8 +792,8 @@ const VRFCoordinatorConfig = ({
       {isExpanded && (
         <div className="space-y-3">
           <p className="text-sm text-gray-300">
-            The contract must be configured with the correct VRF
-            coordinator address from Cartridge.
+            The contract must be configured with the correct VRF coordinator
+            address from Cartridge.
           </p>
 
           <div className="space-y-2">
@@ -826,13 +817,11 @@ const VRFCoordinatorConfig = ({
                 {VRF_PROVIDER_ADDRESS}
               </p>
               <p>
-                <strong>Address in form:</strong>{" "}
-                {newCoordinatorAddress}
+                <strong>Address in form:</strong> {newCoordinatorAddress}
               </p>
               <p>
                 <em>
-                  Note: Only the contract owner can change this
-                  configuration.
+                  Note: Only the contract owner can change this configuration.
                 </em>
               </p>
             </div>
@@ -866,8 +855,7 @@ const VRFCoordinatorConfig = ({
               </p>
               <p>• Only the contract owner can execute this function</p>
               <p>
-                • The contract will use this address to validate VRF
-                callbacks
+                • The contract will use this address to validate VRF callbacks
               </p>
               <p>
                 • Make sure to use the correct VRF provider address from
