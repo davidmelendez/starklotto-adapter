@@ -19,7 +19,7 @@ const VRF_PROVIDER_ADDRESS =
 // Dirección esperada del contrato de Randomness desplegado en testnet
 // Esta dirección se actualiza con cada nuevo deployment para pruebas
 const EXPECTED_RANDOMNESS_CONTRACT_ADDRESS =
-  "0x3d8a08f250a2101978023f3f86b002bf94fda19ba6e7b213e79ae058c031627";
+  "0x2e91ef979c67ef901846fed17a9d72c9c745536266d01962339076bd7717714";
 
 interface RandomnessComponentProps {
   contractName: ContractName;
@@ -27,9 +27,6 @@ interface RandomnessComponentProps {
   onSuccess?: (txHash: string, generationId: string) => void;
 }
 
-interface VRFCoordinatorConfigProps {
-  contractAddress: AddressType;
-}
 
 export const RandomnessComponent = ({
   contractName,
@@ -40,8 +37,6 @@ export const RandomnessComponent = ({
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState<string>("");
   const [generationId, setGenerationId] = useState<string>("");
-  const [useAlternativeMode, setUseAlternativeMode] = useState<boolean>(false);
-  const [forceDevMode, setForceDevMode] = useState<boolean>(false);
 
   const { status: walletStatus, isConnected, account, chainId } = useAccount();
   const { chain } = useNetwork();
@@ -315,107 +310,30 @@ export const RandomnessComponent = ({
     <div className="space-y-6 p-6 bg-component border border-[#8A45FC] rounded-[5px]">
       <div className="space-y-4">
         <h3 className="text-xl font-bold text-white">
-          🏆 Multicall VRF - Request Randomness with Cartridge
+          🎲 Generate Random Numbers (Development Mode)
         </h3>
 
         <p className="text-sm text-gray-300">
-          {isDevnet ? (
-            <>
-              This function generates 5 unique random numbers in the range
-              [1,40] using local generation for development.
-            </>
-          ) : (
-            <>
-              This function executes a multicall that first requests randomness
-              from the Cartridge VRF provider, then consumes that randomness to
-              generate 5 unique numbers in the range [1,40].
-            </>
-          )}
+          Genera 5 números aleatorios únicos en el rango [1,40] usando la función de desarrollo <code className="bg-base-100 px-2 py-1 rounded">devnet_generate</code>.
         </p>
+        
+        <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-600">
+          <p className="text-blue-300 text-sm">
+            ℹ️ <strong>Nota:</strong> El modo de producción con VRF está temporalmente deshabilitado. Por ahora, se usa generación local para pruebas.
+          </p>
+        </div>
 
         {/* Contract information */}
         <div className="bg-base-100 p-4 rounded-lg">
-          <h4 className="font-semibold mb-2">Consumer Contract:</h4>
+          <h4 className="font-semibold mb-2">Contrato Randomness:</h4>
           <Address address={contractAddress} />
-          <div className="mt-2 text-xs text-gray-400">
+          <div className="mt-2 text-xs text-gray-400 space-y-1">
             <p>
-              <strong>Expected address:</strong>{" "}
-              {EXPECTED_RANDOMNESS_CONTRACT_ADDRESS}
+              <strong>Red:</strong> {targetNetwork.name}
             </p>
             <p>
-              <strong>Current address:</strong> {contractAddress}
+              <strong>Función:</strong> <code className="bg-base-300 px-1 rounded">devnet_generate(seed)</code>
             </p>
-            <p>
-              <strong>Network:</strong> {chain?.name || "Unknown"} →{" "}
-              {targetNetwork.name}
-            </p>
-            <p>
-              <strong>Mode:</strong>{" "}
-              {isDevnet
-                ? "Development (devnet)"
-                : "Production (testnet/sepolia)"}
-            </p>
-          </div>
-        </div>
-
-        {/* Technical information */}
-        <div
-          className={`${isDevnet ? "bg-blue-900/20 border-blue-600" : forceDevMode ? "bg-yellow-900/20 border-yellow-600" : "bg-purple-900/20 border-purple-600"} p-4 rounded-lg`}
-        >
-          <h4
-            className={`font-semibold mb-2 ${isDevnet ? "text-blue-300" : forceDevMode ? "text-yellow-300" : "text-purple-300"}`}
-          >
-            📋 Mode:{" "}
-            {isDevnet
-              ? forceDevMode
-                ? "Forced Development (devnet_generate)"
-                : "Development (Local)"
-              : useAlternativeMode
-                ? "Production (Safe Multicall)"
-                : "Production (Standard Multicall)"}
-          </h4>
-          <div className="space-y-1 text-sm">
-            {isDevnet ? (
-              <>
-                <p>
-                  <strong>Method:</strong> devnet_generate (local generation)
-                </p>
-                <p>
-                  <strong>Contract:</strong> {contractAddress}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  {forceDevMode ? "Forced for testing" : "Automatic"}
-                </p>
-              </>
-            ) : (
-              <>
-                <p>
-                  <strong>Method:</strong> Multicall VRF (
-                  {useAlternativeMode ? "Safe Mode" : "Standard"})
-                </p>
-                <p>
-                  <strong>Transaction 1:</strong> request_random → VRF Provider
-                </p>
-                <p>
-                  <strong>Transaction 2:</strong> request_randomness_prod →
-                  Contract
-                </p>
-                <p>
-                  <strong>VRF Provider:</strong> {VRF_PROVIDER_ADDRESS}
-                </p>
-                <p>
-                  <strong>Callback Fee Limit:</strong>{" "}
-                  {useAlternativeMode ? "50,000" : callbackFeeLimit} wei
-                </p>
-                <p>
-                  <strong>Publish Delay:</strong> {publishDelay} (no delay)
-                </p>
-                <p>
-                  <strong>Source (Seed):</strong> Used as source for VRF
-                </p>
-              </>
-            )}
           </div>
         </div>
 
@@ -486,187 +404,7 @@ export const RandomnessComponent = ({
               </div>
             )}
 
-          {/* Specific account/wallet problem diagnosis */}
-          {account?.address &&
-            account.address.startsWith(
-              "0x0297fd6c19289a017d50b1b65a07ea4db27596a8fade85c6b9622a3f9a24d2a9",
-            ) && (
-              <div className="bg-red-900/20 p-3 rounded-lg border border-red-600">
-                <h4 className="font-semibold text-red-300 mb-2">
-                  🚨 Problematic Account Detected
-                </h4>
-                <div className="text-sm space-y-2 text-red-200">
-                  <p>
-                    <strong>
-                      An account that causes transaction errors has been
-                      detected.
-                    </strong>
-                  </p>
-                  <div className="bg-red-800/30 p-2 rounded text-xs">
-                    <p>
-                      <strong>Problematic address:</strong>
-                    </p>
-                    <p className="font-mono break-all">{account.address}</p>
-                  </div>
 
-                  <div className="space-y-2">
-                    <p className="font-semibold">🔧 Options to fix:</p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                      <button
-                        className="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white"
-                        onClick={() => {
-                          // Force disconnect and reconnect
-                          window.location.reload();
-                        }}
-                      >
-                        🔄 Reconnect Wallet
-                      </button>
-
-                      <button
-                        className="btn btn-sm bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => {
-                          setUseAlternativeMode(true);
-                          setSeed("12345");
-                          notification.info(
-                            "Safe Mode activated. Try generating numbers with more conservative parameters.",
-                          );
-                        }}
-                      >
-                        🛡️ Safe Mode
-                      </button>
-
-                      <button
-                        className="btn btn-sm bg-purple-600 hover:bg-purple-700 text-white"
-                        onClick={() => {
-                          // Generate completely different seed
-                          const newSeed = Math.floor(
-                            Math.random() * 1000000,
-                          ).toString();
-                          setSeed(newSeed);
-                          notification.info(
-                            `New seed generated: ${newSeed}. Try generating numbers with this different seed.`,
-                          );
-                        }}
-                      >
-                        🎲 New Seed
-                      </button>
-
-                      <button
-                        className="btn btn-sm bg-yellow-600 hover:bg-yellow-700 text-white"
-                        onClick={() => {
-                          setForceDevMode(!forceDevMode);
-                          setUseAlternativeMode(false);
-                          notification.info(
-                            forceDevMode
-                              ? "Development mode deactivated."
-                              : "Forced development mode activated.",
-                          );
-                        }}
-                      >
-                        🔧 {forceDevMode ? "Deactivate" : "Force"} Dev Mode
-                      </button>
-                    </div>
-
-                    <details className="text-xs">
-                      <summary className="cursor-pointer text-red-300 hover:text-red-200">
-                        More advanced options
-                      </summary>
-                      <div className="mt-2 space-y-1 text-red-300">
-                        <p>• Use a different account in your wallet</p>
-                        <p>• Verify that you have enough ETH for fees</p>
-                        <p>• Make sure the account is active</p>
-                        <p>• Contact support if the problem persists</p>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          {/* Information about Safe Mode when active */}
-          {useAlternativeMode && (
-            <div className="bg-green-900/20 p-3 rounded-lg border border-green-600">
-              <h4 className="font-semibold text-green-300 mb-2">
-                ✅ Safe Mode Active
-              </h4>
-              <div className="text-sm space-y-1 text-green-200">
-                <p>• Using more conservative parameters (fee limit: 50,000)</p>
-                <p>• Higher probability of success with problematic accounts</p>
-                <p>• You can generate numbers using the main button</p>
-                <button
-                  className="btn btn-xs bg-red-600 hover:bg-red-700 text-white mt-2"
-                  onClick={() => {
-                    setUseAlternativeMode(false);
-                    notification.info(
-                      "Safe Mode deactivated. Using normal parameters.",
-                    );
-                  }}
-                >
-                  ❌ Deactivate Safe Mode
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Information about Forced Development Mode when active */}
-          {forceDevMode && (
-            <div className="bg-yellow-900/20 p-3 rounded-lg border border-yellow-600">
-              <h4 className="font-semibold text-yellow-300 mb-2">
-                ⚠️ Forced Development Mode
-              </h4>
-              <div className="text-sm space-y-1 text-yellow-200">
-                <p>
-                  • Using development function (devnet_generate) even on testnet
-                </p>
-                <p>• Local generation without depending on external oracles</p>
-                <p>• Useful for testing when there are VRF problems</p>
-                <button
-                  className="btn btn-xs bg-red-600 hover:bg-red-700 text-white mt-2"
-                  onClick={() => {
-                    setForceDevMode(false);
-                    notification.info(
-                      "Development mode deactivated. Using production mode.",
-                    );
-                  }}
-                >
-                  ❌ Deactivate Dev Mode
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Account status (advanced debugging) */}
-          {isConnected && !writeDisabled && !account?.address && (
-            <div className="bg-orange-900/20 p-3 rounded-lg border border-orange-600">
-              <p className="text-orange-300 text-sm font-semibold mb-2">
-                🔍 Account status (debugging):
-              </p>
-              <div className="text-xs space-y-1">
-                <p>
-                  <strong>Wallet connected:</strong>{" "}
-                  {isConnected ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Account address:</strong>{" "}
-                  {account?.address || "Not available"}
-                </p>
-                <p>
-                  <strong>Wallet status:</strong> {walletStatus}
-                </p>
-                <p>
-                  <strong>Current network:</strong> {chain?.name || "Unknown"}
-                </p>
-                <p>
-                  <strong>Target network:</strong> {targetNetwork.name}
-                </p>
-              </div>
-              <p className="text-orange-300 text-xs mt-2">
-                💡 If you see this, try reconnecting your wallet or refreshing
-                the page.
-              </p>
-            </div>
-          )}
 
           {/* Transaction result */}
           {txHash && (
@@ -690,210 +428,30 @@ export const RandomnessComponent = ({
             {isLoading && (
               <span className="loading loading-spinner loading-sm mr-2"></span>
             )}
-            {isDevnet
-              ? "🎲 Generate 5 Numbers (Development)"
-              : useAlternativeMode
-                ? "🔒 Multicall VRF (Safe Mode)"
-                : "🔮 Multicall VRF (Standard)"}
+            🎲 Generar 5 Números Aleatorios
           </button>
         </div>
 
-        {/* VRF Coordinator Configuration (production only) */}
-        {!isDevnet && (
-          <VRFCoordinatorConfig contractAddress={contractAddress} />
-        )}
-
         {/* Additional information */}
         <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600">
-          <h4 className="font-semibold mb-2 text-blue-300">💡 How it works:</h4>
-          {isDevnet ? (
-            <ol className="text-sm space-y-1 text-gray-300">
-              <li>
-                1. Directly calls <code>devnet_generate(seed)</code>
-              </li>
-              <li>
-                2. The contract generates 5 unique numbers using a local LCG
-                algorithm
-              </li>
-              <li>
-                3. Numbers are generated immediately without depending on
-                external oracles
-              </li>
-              <li>
-                4. Numbers are stored and can be queried with{" "}
-                <code>get_generation_numbers(id)</code>
-              </li>
-            </ol>
-          ) : (
-            <ol className="text-sm space-y-1 text-gray-300">
-              <li>
-                1. <strong>Step 1:</strong> Executes multicall with 2
-                transactions
-              </li>
-              <li>
-                2. <strong>Transaction 1:</strong>{" "}
-                <code>request_random(caller, source)</code> → VRF Provider
-              </li>
-              <li>
-                3. <strong>Transaction 2:</strong>{" "}
-                <code>request_randomness_prod(seed, fee, delay)</code> →
-                Contract
-              </li>
-              <li>
-                4. The contract requests and consumes randomness using Cartridge
-                VRF protocol
-              </li>
-              <li>
-                5. Numbers are generated using verifiable decentralized
-                randomness
-              </li>
-              <li>
-                6. Numbers are stored and can be queried with{" "}
-                <code>get_generation_numbers(id)</code>
-              </li>
-            </ol>
-          )}
+          <h4 className="font-semibold mb-2 text-blue-300">💡 Cómo funciona:</h4>
+          <ol className="text-sm space-y-1 text-gray-300">
+            <li>
+              1. Llama directamente a <code className="bg-base-100 px-1 rounded">devnet_generate(seed)</code>
+            </li>
+            <li>
+              2. El contrato genera 5 números únicos usando un algoritmo LCG local
+            </li>
+            <li>
+              3. Los números se generan inmediatamente sin depender de oráculos externos
+            </li>
+            <li>
+              4. Los números se almacenan y pueden consultarse con{" "}
+              <code className="bg-base-100 px-1 rounded">get_generation_numbers(id)</code>
+            </li>
+          </ol>
         </div>
       </div>
-    </div>
-  );
-};
-
-// Component to configure VRF Coordinator
-const VRFCoordinatorConfig = ({
-  contractAddress,
-}: VRFCoordinatorConfigProps) => {
-  const [newCoordinatorAddress, setNewCoordinatorAddress] =
-    useState<string>(VRF_PROVIDER_ADDRESS);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const { writeTransaction } = useTransactor();
-
-  const handleUpdateCoordinator = async () => {
-    if (
-      !newCoordinatorAddress ||
-      !newCoordinatorAddress.startsWith("0x") ||
-      newCoordinatorAddress.length !== 66
-    ) {
-      notification.error("Invalid VRF coordinator address");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const txHash = await writeTransaction([
-        {
-          contractAddress: contractAddress as string,
-          entrypoint: "set_vrf_coordinator",
-          calldata: [newCoordinatorAddress],
-        },
-      ]);
-
-      if (txHash) {
-        notification.success(
-          `VRF coordinator updated successfully! Hash: ${txHash}`,
-        );
-        setIsExpanded(false);
-      }
-    } catch (error: any) {
-      notification.error(
-        "Error updating VRF coordinator: " + (error.message || "Unknown error"),
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="bg-orange-900/20 p-4 rounded-lg border border-orange-600">
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold text-orange-300">⚙️ VRF Configuration</h4>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-orange-300 hover:text-orange-200 text-sm"
-        >
-          {isExpanded ? "▼" : "▶"} {isExpanded ? "Hide" : "Show"}
-        </button>
-      </div>
-
-      {isExpanded && (
-        <div className="space-y-3">
-          <p className="text-sm text-gray-300">
-            The contract must be configured with the correct VRF coordinator
-            address from Cartridge.
-          </p>
-
-          <div className="space-y-2">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-300">
-                New VRF Coordinator address:
-              </label>
-              <input
-                type="text"
-                value={newCoordinatorAddress}
-                onChange={(e) => setNewCoordinatorAddress(e.target.value)}
-                placeholder="0x..."
-                className="input input-bordered w-full bg-base-100 text-white text-sm"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="text-xs text-gray-400 space-y-1">
-              <p>
-                <strong>Current configured address:</strong>{" "}
-                {VRF_PROVIDER_ADDRESS}
-              </p>
-              <p>
-                <strong>Address in form:</strong> {newCoordinatorAddress}
-              </p>
-              <p>
-                <em>
-                  Note: Only the contract owner can change this configuration.
-                </em>
-              </p>
-            </div>
-
-            <button
-              onClick={handleUpdateCoordinator}
-              disabled={
-                isLoading || newCoordinatorAddress === VRF_PROVIDER_ADDRESS
-              }
-              className={`btn btn-sm w-full ${
-                isLoading || newCoordinatorAddress === VRF_PROVIDER_ADDRESS
-                  ? "btn-disabled"
-                  : "bg-orange-600 hover:bg-orange-700"
-              }`}
-            >
-              {isLoading && (
-                <span className="loading loading-spinner loading-xs mr-2"></span>
-              )}
-              Update VRF Coordinator
-            </button>
-          </div>
-
-          <details className="text-sm">
-            <summary className="cursor-pointer text-orange-300 hover:text-orange-200">
-              Technical information
-            </summary>
-            <div className="mt-2 space-y-1 text-gray-400 text-xs">
-              <p>
-                • This function calls <code>set_vrf_coordinator()</code> on the
-                contract
-              </p>
-              <p>• Only the contract owner can execute this function</p>
-              <p>
-                • The contract will use this address to validate VRF callbacks
-              </p>
-              <p>
-                • Make sure to use the correct VRF provider address from
-                Cartridge
-              </p>
-            </div>
-          </details>
-        </div>
-      )}
     </div>
   );
 };
