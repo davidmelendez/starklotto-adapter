@@ -89,17 +89,6 @@ export const RandomnessComponent = ({
       return;
     }
 
-    // 🚨 SPECIFIC VERIFICATION: Detect problematic account
-    if (
-      account?.address ===
-      "0x0297fd6c19289a017d50b1b65a07ea4db27596a8fade85c6b9622a3f9a24d2a9"
-    ) {
-      notification.error(
-        "A problematic account has been detected. Try reconnecting your wallet or use a different account.",
-      );
-      return;
-    }
-
     if (!seed || isNaN(Number(seed))) {
       notification.error("Please enter a valid seed (integer number)");
       return;
