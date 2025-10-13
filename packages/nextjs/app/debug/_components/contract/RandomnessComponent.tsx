@@ -19,7 +19,7 @@ const VRF_PROVIDER_ADDRESS =
 // Dirección esperada del contrato de Randomness desplegado en testnet
 // Esta dirección se actualiza con cada nuevo deployment para pruebas
 const EXPECTED_RANDOMNESS_CONTRACT_ADDRESS =
-  "0x5b3558ec6cbe58d1d1279b428aaace0fd9230b5993e19f482af82306076c54f";
+  "0x3d8a08f250a2101978023f3f86b002bf94fda19ba6e7b213e79ae058c031627";
 
 interface RandomnessComponentProps {
   contractName: ContractName;
@@ -118,6 +118,34 @@ export const RandomnessComponent = ({
       // Convertir seed a u64 (número entero sin signo de 64 bits)
       const seedValue = BigInt(seed);
 
+      // TODO: Production mode (request_randomness_prod) is currently disabled due to VRF issues on testnet.
+      // For now, we're forcing dev mode (devnet_generate) for all environments including testnet.
+      // Once the production VRF integration is stable, uncomment the conditional logic below
+      // and remove the forced dev mode implementation.
+      
+      // TEMPORARY: Always use devnet_generate regardless of network
+      const seedHex = num.toHex(seedValue);
+
+      const txHash = await writeTransaction([
+        {
+          contractAddress: contractAddress as string,
+          entrypoint: "devnet_generate",
+          calldata: [seedHex],
+        },
+      ]);
+
+      if (txHash) {
+        setTxHash(txHash);
+        notification.success(
+          `5 random numbers generated successfully! Hash: ${txHash}`,
+        );
+        if (onSuccess) {
+          onSuccess(txHash, generationId);
+        }
+      }
+
+      /* COMMENTED OUT - Production mode with VRF (to be re-enabled when VRF is stable)
+      
       // Detectar si estamos en devnet o testnet/mainnet
       const isDevnet =
         forceDevMode ||
@@ -230,6 +258,7 @@ export const RandomnessComponent = ({
           }
         }
       }
+      */
     } catch (error: any) {
       // Provide more specific error messages
       let errorMessage = "Unknown error requesting randomness";
