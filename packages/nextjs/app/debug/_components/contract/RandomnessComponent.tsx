@@ -27,7 +27,6 @@ interface RandomnessComponentProps {
   onSuccess?: (txHash: string, generationId: string) => void;
 }
 
-
 export const RandomnessComponent = ({
   contractName,
   contractAddress,
@@ -106,7 +105,7 @@ export const RandomnessComponent = ({
       // For now, we're forcing dev mode (devnet_generate) for all environments including testnet.
       // Once the production VRF integration is stable, uncomment the conditional logic below
       // and remove the forced dev mode implementation.
-      
+
       // TEMPORARY: Always use devnet_generate regardless of network
       const seedHex = num.toHex(seedValue);
 
@@ -303,12 +302,17 @@ export const RandomnessComponent = ({
         </h3>
 
         <p className="text-sm text-gray-300">
-          Genera 5 números aleatorios únicos en el rango [1,40] usando la función de desarrollo <code className="bg-base-100 px-2 py-1 rounded">devnet_generate</code>.
+          Genera 5 números aleatorios únicos en el rango [1,40] usando la
+          función de desarrollo{" "}
+          <code className="bg-base-100 px-2 py-1 rounded">devnet_generate</code>
+          .
         </p>
-        
+
         <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-600">
           <p className="text-blue-300 text-sm">
-            ℹ️ <strong>Nota:</strong> El modo de producción con VRF está temporalmente deshabilitado. Por ahora, se usa generación local para pruebas.
+            ℹ️ <strong>Nota:</strong> El modo de producción con VRF está
+            temporalmente deshabilitado. Por ahora, se usa generación local para
+            pruebas.
           </p>
         </div>
 
@@ -321,7 +325,10 @@ export const RandomnessComponent = ({
               <strong>Red:</strong> {targetNetwork.name}
             </p>
             <p>
-              <strong>Función:</strong> <code className="bg-base-300 px-1 rounded">devnet_generate(seed)</code>
+              <strong>Función:</strong>{" "}
+              <code className="bg-base-300 px-1 rounded">
+                devnet_generate(seed)
+              </code>
             </p>
           </div>
         </div>
@@ -393,8 +400,6 @@ export const RandomnessComponent = ({
               </div>
             )}
 
-
-
           {/* Transaction result */}
           {txHash && (
             <div className="bg-green-900/20 p-3 rounded-lg border border-green-600">
@@ -423,20 +428,29 @@ export const RandomnessComponent = ({
 
         {/* Additional information */}
         <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600">
-          <h4 className="font-semibold mb-2 text-blue-300">💡 Cómo funciona:</h4>
+          <h4 className="font-semibold mb-2 text-blue-300">
+            💡 Cómo funciona:
+          </h4>
           <ol className="text-sm space-y-1 text-gray-300">
             <li>
-              1. Llama directamente a <code className="bg-base-100 px-1 rounded">devnet_generate(seed)</code>
+              1. Llama directamente a{" "}
+              <code className="bg-base-100 px-1 rounded">
+                devnet_generate(seed)
+              </code>
             </li>
             <li>
-              2. El contrato genera 5 números únicos usando un algoritmo LCG local
+              2. El contrato genera 5 números únicos usando un algoritmo LCG
+              local
             </li>
             <li>
-              3. Los números se generan inmediatamente sin depender de oráculos externos
+              3. Los números se generan inmediatamente sin depender de oráculos
+              externos
             </li>
             <li>
               4. Los números se almacenan y pueden consultarse con{" "}
-              <code className="bg-base-100 px-1 rounded">get_generation_numbers(id)</code>
+              <code className="bg-base-100 px-1 rounded">
+                get_generation_numbers(id)
+              </code>
             </li>
           </ol>
         </div>
