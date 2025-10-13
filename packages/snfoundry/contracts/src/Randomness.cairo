@@ -201,6 +201,8 @@ pub mod Randomness {
         }
 
         fn devnet_generate(ref self: ContractState, seed: u64) -> u64 {
+            // Only the contract owner can call this function
+            self.ownable.assert_only_owner();
             assert(self.dev_mode.read(), 'DEV_DISABLED');
 
             let next_id = self.generation_counter.read() + 1_u64;
