@@ -16,6 +16,13 @@ const containsDevnet = (networks: readonly chains.Chain[]) => {
 const currentNetwork = scaffoldConfig.targetNetworks[0];
 const currentNetworkName = currentNetwork.network;
 
+console.log("🔍 Provider Debug:", {
+  currentNetworkName,
+  currentNetworkId: currentNetwork.id,
+  availableRpcUrls: Object.keys(scaffoldConfig.rpcProviderUrl),
+  rpcUrlConfig: scaffoldConfig.rpcProviderUrl,
+});
+
 // Get RPC URL for the current network
 const rpcUrl = scaffoldConfig.rpcProviderUrl[currentNetworkName] || "";
 
@@ -26,6 +33,7 @@ if (rpcUrl === "") {
   console.warn(
     `No RPC Provider URL configured for ${currentNetworkName}. Using public provider.`,
   );
+  console.warn("Available keys:", Object.keys(scaffoldConfig.rpcProviderUrl));
 }
 
 const provider =
